@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CinefusiónTV · Canal en vivo</title>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
+<style>
+html,body{margin:0;height:100%;background:#000;color:#fff;font-family:system-ui,sans-serif;overflow:hidden}
+#stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+video{width:100%;height:100%;object-fit:contain;background:#000}
+#badge{position:absolute;top:16px;left:16px;background:rgba(229,9,20,.95);padding:6px 12px;border-radius:6px;font-size:12px;font-weight:800;letter-spacing:1.4px;display:flex;gap:7px;align-items:center;z-index:5}
+#badge .pt{width:8px;height:8px;background:#fff;border-radius:50%;animation:bk 1.1s infinite}
+@keyframes bk{50%{opacity:.15}}
+#bar{position:absolute;top:16px;right:16px;display:flex;gap:8px;z-index:5}
+#bar button{background:rgba(0,0,0,.65);border:1px solid #333;color:#fff;padding:9px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;backdrop-filter:blur(6px)}
+#bar button:hover{background:#1a1a28}
+#info{position:absolute;left:0;right:0;bottom:0;padding:70px 20px 22px;background:linear-gradient(transparent,rgba(0,0,0,.92));display:flex;justify-content:space-between;gap:14px;align-items:flex-end;flex-wrap:wrap;pointer-events:none;z-index:4}
+#tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:1.2px;padding:4px 9px;border-radius:5px;background:#3ea6ff;color:#04121f;margin-bottom:7px}
+#tag.INICIO{background:#22c55e;color:#04160a}#tag.PUBLICIDAD{background:#f59e0b;color:#1c1200}
+#t{font-size:20px;font-weight:700}#s{font-size:13px;color:#b9b9d6;white-space:nowrap}
+#gate{position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:18px;background:rgba(0,0,0,.88);cursor:pointer;z-index:20}
+#gate.on{display:flex}
+#gate .play{width:96px;height:96px;border-radius:50%;background:#e50914;display:grid;place-items:center;font-size:38px;color:#fff;box-shadow:0 14px 44px rgba(229,9,20,.55)}
+#gate p{font-size:15px;color:#ccc;margin:0}
+#msg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:#888;font-size:14px;display:none;z-index:3}
+</style></head><body>
+<div id="stage">
+<video id="v" playsinline controls preload="auto" autoplay></video>
+<div id="badge"><span class="pt"></span> EN VIVO</div>
+<div id="bar"><button id="bSkip">⏭</button><button id="bFs">⛶</button></div>
+<div id="msg">Cargando emisión…</div>
+<div id="info"><div><span id="tag">—</span><div id="t">Cargando…</div></div><div id="s"></div></div>
+<div id="gate"><div class="play">▶</div><p>Pulsa para iniciar la emisión</p></div>
+</div>
+<script>
+(function(){
+var PL=[{"tipo":"INICIO","titulo":"lv_0_20260904003455.ia","url":"https://archive.org/serve/lv_0_20260904003455/lv_0_20260904003455.ia.mp4"},{"tipo":"PUBLICIDAD","titulo":"lv_7569774840639442181_20260904001722.ia","url":"https://archive.org/download/lv_7569774840639442181_20260904001722/lv_7569774840639442181_20260904001722.ia.mp4"},{"tipo":"PELÍCULA","titulo":"Ver Spider-Man: Un nuevo día (2026) Online en HD","url":"https://huggingface.co/Samas21/P3l1/resolve/main/5p1d3r-M4n%20-%20Un%20nu3v0%20d14%20HD%20D1git4l%20(2026).mp4"},{"tipo":"PUBLICIDAD","titulo":"lv_7569774840639442181_20260904001722.ia","url":"https://archive.org/download/lv_7569774840639442181_20260904001722/lv_7569774840639442181_20260904001722.ia.mp4"},{"tipo":"PELÍCULA","titulo":"Ver Depredador: La presa (2022) Online en HD","url":"https://huggingface.co/Samas21/P3l1/resolve/main/D3pr3d4d0r%20-%20L4%20pr354%20(2022).mp4"},{"tipo":"PUBLICIDAD","titulo":"lv_7569774840639442181_20260904001722.ia","url":"https://archive.org/download/lv_7569774840639442181_20260904001722/lv_7569774840639442181_20260904001722.ia.mp4"},{"tipo":"PELÍCULA","titulo":"Amos del Universo (2026) Online en HD","url":"https://huggingface.co/danimados/myspace71/resolve/main/Amos_del_Universo_2026.mp4"}],i=0,hls=null,wd=null,cid=0;
+var v=document.getElementById('v'),gate=document.getElementById('gate'),
+    elTag=document.getElementById('tag'),elT=document.getElementById('t'),
+    elS=document.getElementById('s'),elMsg=document.getElementById('msg');
+function tryPlay(){var p=v.play();if(p&&p.catch)p.catch(function(){gate.classList.add('on');});}
+function load(it){
+  var my=++cid;clearTimeout(wd);
+  if(hls){try{hls.destroy();}catch(e){}hls=null;}
+  v.pause();v.removeAttribute('src');v.load();
+  elTag.textContent=it.tipo||'CANAL';elTag.className=it.tipo||'';
+  elT.textContent=it.titulo||'Canal';
+  var nx=PL[(i+1)%PL.length];elS.textContent=nx?'Siguiente: '+nx.titulo:'';
+  elMsg.style.display='block';elMsg.textContent='Cargando: '+(it.titulo||'');
+  var isHls=/\.m3u8(\?|#|$)/i.test(it.url);
+  if(isHls&&window.Hls&&Hls.isSupported()){
+    hls=new Hls({lowLatencyMode:true,liveDurationInfinity:true,maxBufferLength:30});
+    hls.loadSource(it.url);hls.attachMedia(v);
+    hls.on(Hls.Events.MANIFEST_PARSED,function(){if(my!==cid)return;elMsg.style.display='none';tryPlay();});
+    hls.on(Hls.Events.ERROR,function(e,d){
+      if(my!==cid||!d||!d.fatal)return;
+      if(d.type===Hls.ErrorTypes.NETWORK_ERROR)hls.startLoad();
+      else if(d.type===Hls.ErrorTypes.MEDIA_ERROR)hls.recoverMediaError();
+      else next();
+    });
+  } else { v.src=it.url; v.load(); tryPlay(); }
+  wd=setTimeout(function(){if(my===cid&&v.readyState<2)next();},20000);
+}
+function next(){i=(i+1)%PL.length;load(PL[i]);}
+v.addEventListener('ended',next);
+v.addEventListener('playing',function(){clearTimeout(wd);elMsg.style.display='none';gate.classList.remove('on');});
+v.addEventListener('error',function(){if(!hls)next();});
+v.addEventListener('waiting',function(){if(v.readyState<2)elMsg.style.display='block';});
+gate.addEventListener('click',function(){gate.classList.remove('on');tryPlay();});
+document.getElementById('bSkip').addEventListener('click',next);
+document.getElementById('bFs').addEventListener('click',function(){
+  if(document.fullscreenElement)document.exitFullscreen();
+  else if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(function(){});
+});
+if(PL&&PL.length)setTimeout(function(){load(PL[0]);},150);
+else{elT.textContent='Sin contenido';elMsg.style.display='block';elMsg.textContent='Lista vacía';}
+})();
+</script></body></html>
