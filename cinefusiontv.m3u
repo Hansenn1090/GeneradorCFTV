@@ -1,0 +1,32 @@
+#EXTM3U
+#EXTENC:UTF-8
+# Generado por CinefusiónTV · 10/9/2026, 18:29:30
+# Playlist secuencial tipo canal de TV en vivo
+
+# ======= SECUENCIA DE EMISIÓN =======
+#EXTINF:-1 tvg-id="inicio-cinefusiontv" tvg-name="Inicio · CinefusiónTV" tvg-logo="" group-title="CinefusiónTV · Inicio",Inicio · CinefusiónTV
+https://archive.org/serve/lv_0_20260904003455/lv_0_20260904003455.ia.mp4
+#EXTINF:-1 tvg-id="publicidad-1" tvg-name="Publicidad 1" tvg-logo="" group-title="CinefusiónTV · Publicidad",Publicidad 1
+https://archive.org/download/lv_7569774840639442181_20260904001722/lv_7569774840639442181_20260904001722.ia.mp4
+#EXTINF:-1 tvg-id="ver-spider-man-un-nuevo-dia-2026-online-" tvg-name="Ver Spider-Man: Un nuevo día (2026) Online en HD" tvg-logo="" group-title="CinefusiónTV · Películas",Ver Spider-Man: Un nuevo día (2026) Online en HD
+https://huggingface.co/Samas21/P3l1/resolve/main/5p1d3r-M4n%20-%20Un%20nu3v0%20d14%20HD%20D1git4l%20(2026).mp4
+#EXTINF:-1 tvg-id="publicidad-2" tvg-name="Publicidad 2" tvg-logo="" group-title="CinefusiónTV · Publicidad",Publicidad 2
+https://archive.org/download/lv_7569774840639442181_20260904001722/lv_7569774840639442181_20260904001722.ia.mp4
+#EXTINF:-1 tvg-id="ver-depredador-la-presa-2022-online-en-h" tvg-name="Ver Depredador: La presa (2022) Online en HD" tvg-logo="" group-title="CinefusiónTV · Películas",Ver Depredador: La presa (2022) Online en HD
+https://huggingface.co/Samas21/P3l1/resolve/main/D3pr3d4d0r%20-%20L4%20pr354%20(2022).mp4
+#EXTINF:-1 tvg-id="publicidad-3" tvg-name="Publicidad 3" tvg-logo="" group-title="CinefusiónTV · Publicidad",Publicidad 3
+https://archive.org/download/lv_7569774840639442181_20260904001722/lv_7569774840639442181_20260904001722.ia.mp4
+#EXTINF:-1 tvg-id="amos-del-universo-2026-online-en-hd" tvg-name="Amos del Universo (2026) Online en HD" tvg-logo="" group-title="CinefusiónTV · Películas",Amos del Universo (2026) Online en HD
+https://huggingface.co/danimados/myspace71/resolve/main/Amos_del_Universo_2026.mp4
+
+# ======= CATÁLOGO AGRUPADO =======
+#EXTINF:-1 tvg-id="cinefusiontv-intro" tvg-name="CinefusiónTV · Intro" tvg-logo="" group-title="CinefusiónTV · Inicio",CinefusiónTV · Intro
+https://archive.org/serve/lv_0_20260904003455/lv_0_20260904003455.ia.mp4
+#EXTINF:-1 tvg-id="lv-7569774840639442181-20260904001722-ia" tvg-name="lv_7569774840639442181_20260904001722.ia" tvg-logo="" group-title="CinefusiónTV · Publicidad",lv_7569774840639442181_20260904001722.ia
+https://archive.org/download/lv_7569774840639442181_20260904001722/lv_7569774840639442181_20260904001722.ia.mp4
+#EXTINF:-1 tvg-id="ver-spider-man-un-nuevo-dia-2026-online-" tvg-name="Ver Spider-Man: Un nuevo día (2026) Online en HD" tvg-logo="" group-title="CinefusiónTV · Películas",Ver Spider-Man: Un nuevo día (2026) Online en HD
+https://huggingface.co/Samas21/P3l1/resolve/main/5p1d3r-M4n%20-%20Un%20nu3v0%20d14%20HD%20D1git4l%20(2026).mp4
+#EXTINF:-1 tvg-id="ver-depredador-la-presa-2022-online-en-h" tvg-name="Ver Depredador: La presa (2022) Online en HD" tvg-logo="" group-title="CinefusiónTV · Películas",Ver Depredador: La presa (2022) Online en HD
+https://huggingface.co/Samas21/P3l1/resolve/main/D3pr3d4d0r%20-%20L4%20pr354%20(2022).mp4
+#EXTINF:-1 tvg-id="amos-del-universo-2026-online-en-hd" tvg-name="Amos del Universo (2026) Online en HD" tvg-logo="" group-title="CinefusiónTV · Películas",Amos del Universo (2026) Online en HD
+https://huggingface.co/danimados/myspace71/resolve/main/Amos_del_Universo_2026.mp4
