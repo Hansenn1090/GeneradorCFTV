@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CinefusiónTV · Emisor Live + URL compartible (GitHub Pages)</title>
+<title>CinefusiónTV · Emisor Live + Web M3U con Reproductor</title>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
 <style>
   :root{
@@ -46,7 +46,7 @@
 
   .wrap{
     max-width:1500px;margin:0 auto;padding:22px;
-    display:grid;grid-template-columns:minmax(0,1.55fr) minmax(360px,.9fr);gap:22px;
+    display:grid;grid-template-columns:minmax(0,1.55fr) minmax(370px,.9fr);gap:22px;
   }
   @media(max-width:1050px){.wrap{grid-template-columns:1fr}}
 
@@ -140,24 +140,24 @@
     font-size:12px;line-height:1.6;color:#9fe8b0;max-height:220px;overflow:auto;
     white-space:pre-wrap;word-break:break-all;margin:0;font-family:ui-monospace,Menlo,Consolas,monospace;
   }
-  #urlUnica{
+  #urlUnica,#urlWeb{
     font-size:11.5px;
     background:#0a1420;
     border-color:#1e3a5f;
     cursor:text;
   }
   #urlUnica:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.15)}
+  #urlWeb:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(62,166,255,.2)}
+  #urlWeb{border-color:#1e3a5f;background:#08131f}
 
-  .badge-unica{
+  .badge-unica,.badge-gh,.badge-web{
     display:inline-block;font-size:10px;font-weight:800;letter-spacing:1px;
-    padding:3px 8px;border-radius:4px;background:rgba(34,197,94,.15);
-    color:#4ade80;border:1px solid rgba(34,197,94,.35);margin-left:8px;
+    padding:3px 8px;border-radius:4px;margin-left:8px;
   }
-  .badge-gh{
-    display:inline-block;font-size:10px;font-weight:800;letter-spacing:1px;
-    padding:3px 8px;border-radius:4px;background:rgba(123,47,247,.15);
-    color:#c4a6ff;border:1px solid rgba(123,47,247,.4);margin-left:8px;
-  }
+  .badge-unica{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.35)}
+  .badge-gh{background:rgba(123,47,247,.15);color:#c4a6ff;border:1px solid rgba(123,47,247,.4)}
+  .badge-web{background:rgba(62,166,255,.15);color:#7dd3fc;border:1px solid rgba(62,166,255,.45)}
+
   .aviso{
     margin-top:10px;padding:10px 12px;border-radius:9px;font-size:12px;line-height:1.55;
     background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.35);color:#fcd34d;
@@ -178,7 +178,6 @@
   ::-webkit-scrollbar-thumb{background:#2c2c44;border-radius:5px}
   ::-webkit-scrollbar-thumb:hover{background:#3d3d5c}
 
-  /* Modo reproductor: oculta paneles de edición cuando se abre una URL compartida */
   body.modoPlayer .wrap{grid-template-columns:1fr}
   body.modoPlayer aside{display:none}
   body.modoPlayer .controles #btnDemo,
@@ -198,7 +197,7 @@
     <div class="logo">C</div>
     <div>
       <h1>Cinefusión<span>TV</span></h1>
-      <p>Emisor Live · URL compartible para GitHub Pages</p>
+      <p>Emisor Live · Web M3U con Reproductor</p>
     </div>
   </div>
   <div class="status" id="statusPill"><span class="dot"></span> <span id="statusTxt">DETENIDO</span></div>
@@ -241,7 +240,7 @@
     </div>
   </section>
 
-  <!-- ============ COLUMNA DERECHA: CONFIG + M3U + URL ÚNICA ============ -->
+  <!-- ============ COLUMNA DERECHA ============ -->
   <aside>
 
     <div class="panel">
@@ -269,24 +268,51 @@
       </div>
     </div>
 
-    <!-- ====== URL ÚNICA COMPARTIBLE ====== -->
-    <div class="panel" style="border-color:rgba(123,47,247,.4);background:linear-gradient(180deg,rgba(123,47,247,.07),transparent 60%)">
-      <h3>🔗 URL única del canal <span class="badge-gh">GITHUB PAGES</span></h3>
+    <!-- ====== ★ NUEVO: WEB M3U CON REPRODUCTOR ====== -->
+    <div class="panel" style="border-color:rgba(62,166,255,.45);background:linear-gradient(180deg,rgba(62,166,255,.07),transparent 60%)">
+      <h3>🎬 Web M3U con Reproductor <span class="badge-web">NUEVO</span></h3>
 
       <p class="hint" style="margin-top:0">
-        Genera <b>un solo enlace</b> que puedes pegar en WhatsApp, Telegram, OBS, VLC,
-        IPTV Smarters, o cualquier reproductor web. Al abrirlo, el canal se reproduce solo.
+        Convierte tu lista M3U en una <b>página web autónoma con reproductor de video integrado</b>.
+        Genera una URL que al abrirla reproduce el canal automáticamente, sin instalar nada.
       </p>
 
-      <label class="f">🔗 Enlace compartible (GitHub Pages — recomendado)</label>
-      <input type="text" id="urlUnica" readonly placeholder="Pulsa «Generar enlace» para crear la URL compartible…">
-      <p class="hint" style="margin-top:5px">
-        Se ve así: <code>https://tusuario.github.io/turepo/#c=…&auto=1</code>
+      <label class="f">🔗 URL del reproductor web</label>
+      <input type="text" id="urlWeb" readonly placeholder="Pulsa «Convertir a Web M3U» para crear el reproductor…">
+
+      <div class="row">
+        <button class="btn primary" id="btnWebGenerar">🎬 Convertir a Web M3U</button>
+        <button class="btn blue" id="btnWebData">🌐 Data URI</button>
+      </div>
+      <div class="row" style="margin-top:9px">
+        <button class="btn green" id="btnWebCopiar">📋 Copiar URL</button>
+        <button class="btn" id="btnWebAbrir">▶ Abrir reproductor</button>
+        <button class="btn ghost" id="btnWebDescargar">⬇ Descargar .html</button>
+      </div>
+
+      <div class="aviso" id="avisoWeb" style="display:none"></div>
+
+      <p class="hint">
+        <b>Blob URL:</b> se abre al instante en una pestaña nueva (vive mientras esta pestaña esté abierta).<br>
+        <b>Data URI:</b> portable, se pega en el navegador y reproduce directo.<br>
+        <b>Descargar .html:</b> ideal para GitHub Pages → súbelo y tendrás una URL fija y permanente.
       </p>
+    </div>
+
+    <!-- ====== URL ÚNICA (hash) ====== -->
+    <div class="panel" style="border-color:rgba(123,47,247,.4);background:linear-gradient(180deg,rgba(123,47,247,.07),transparent 60%)">
+      <h3>🔗 URL compartible (hash) <span class="badge-gh">GITHUB PAGES</span></h3>
+
+      <p class="hint" style="margin-top:0">
+        Enlace corto que carga <b>esta misma página</b> en modo reproductor con tu configuración.
+      </p>
+
+      <label class="f">Enlace compartible</label>
+      <input type="text" id="urlUnica" readonly placeholder="Pulsa «Generar enlace»…">
 
       <div class="row">
         <button class="btn purple" id="btnUrlShare">🔗 Generar enlace</button>
-        <button class="btn"        id="btnUrlData">🌐 Data URI (portátil)</button>
+        <button class="btn"        id="btnUrlData">🌐 Data URI M3U</button>
       </div>
       <div class="row" style="margin-top:9px">
         <button class="btn green" id="btnCopiarUrl">📋 Copiar URL</button>
@@ -295,11 +321,6 @@
       </div>
 
       <div class="aviso" id="avisoUrl" style="display:none"></div>
-
-      <p class="hint">
-        <b>Enlace compartible:</b> corto, se pega en cualquier reproductor web o navegador y reproduce la secuencia.<br>
-        <b>Data URI:</b> portable pero muy largo, ideal para VLC / IPTV Smarters / TiviMate.
-      </p>
     </div>
 
     <div class="panel">
@@ -320,7 +341,7 @@
 
 <script>
 /* =========================================================
-   CINEFUSIÓNTV · LIVE + URL COMPARTIBLE PARA GITHUB PAGES
+   CINEFUSIÓNTV · LIVE + WEB M3U CON REPRODUCTOR
    ========================================================= */
 const $ = id => document.getElementById(id);
 
@@ -335,11 +356,11 @@ let activo     = false;
 let cargaId    = 0;
 let watchdog   = null;
 let cfg        = { intro:null, ads:[], movies:[], loop:true };
-let urlData    = '';
-let esModoPlayer = false;
+let urlDataM3U = '';
+let urlWebBlob = null;
 
 /* ---------------------------------------------------------
-   ★ BASE64 UTF-8 SAFE (para el hash de la URL)
+   BASE64 UTF-8 SAFE
    --------------------------------------------------------- */
 function b64encode(str){
   const bytes = new TextEncoder().encode(str);
@@ -356,9 +377,7 @@ function b64decode(b64){
   for(let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
   return new TextDecoder().decode(bytes);
 }
-function toUrlSafe(b64){
-  return b64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-}
+function toUrlSafe(b64){ return b64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
 function fromUrlSafe(s){
   s = s.replace(/-/g,'+').replace(/_/g,'/');
   while(s.length % 4) s += '=';
@@ -366,7 +385,7 @@ function fromUrlSafe(s){
 }
 
 /* ---------------------------------------------------------
-   Utilidades generales
+   Utilidades
    --------------------------------------------------------- */
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -396,7 +415,7 @@ function toast(msg){
   t.textContent = msg;
   t.classList.add('show');
   clearTimeout(t._tm);
-  t._tm = setTimeout(()=>t.classList.remove('show'), 2600);
+  t._tm = setTimeout(()=>t.classList.remove('show'), 2800);
 }
 function slug(txt){
   return String(txt).toLowerCase()
@@ -404,9 +423,6 @@ function slug(txt){
     .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').substring(0,40) || 'canal';
 }
 
-/* ---------------------------------------------------------
-   Reloj
-   --------------------------------------------------------- */
 setInterval(()=>{
   const d = new Date();
   $('reloj').textContent = d.toLocaleTimeString('es-ES',{hour12:false});
@@ -422,12 +438,6 @@ function leerConfig(){
   cfg.movies  = limpiarLineas($('inMovies').value).map(parseLinea);
   cfg.loop    = $('chkLoop').checked;
   return cfg;
-}
-function aplicarConfig(c){
-  if(!c) return;
-  $('inIntro').value  = c.intro  || '';
-  $('inAds').value    = c.ads    || '';
-  $('inMovies').value = c.movies || '';
 }
 function serializarConfig(){
   return JSON.stringify({
@@ -458,15 +468,10 @@ function cargarLocal(){
     return deserializarConfig(raw);
   }catch(e){ return false; }
 }
-
-/* ---------------------------------------------------------
-   ★ AVISO MIXED CONTENT (HTTP dentro de HTTPS GitHub Pages)
-   --------------------------------------------------------- */
 function validarUrlsSeguras(){
-  const esHttps = location.protocol === 'https:';
   const cont = $('avisoHttps');
   cont.innerHTML = '';
-  if(!esHttps) return;
+  if(location.protocol !== 'https:') return;
 
   const todas = [
     $('inIntro').value, $('inAds').value, $('inMovies').value
@@ -477,14 +482,14 @@ function validarUrlsSeguras(){
 
   if(todas.length){
     cont.innerHTML = `<div class="aviso err">
-      ⚠ <strong>${todas.length} URL(s) usan HTTP</strong> y no cargarán desde GitHub Pages
-      (bloqueo por contenido mixto). Cámbialas a <b>HTTPS</b> o súbelas a un hosting con SSL.
+      ⚠ <strong>${todas.length} URL(s) usan HTTP</strong> y no cargarán desde HTTPS (contenido mixto).
+      Cámbialas a <b>HTTPS</b> o súbelas a un hosting con SSL.
     </div>`;
   }
 }
 
 /* =========================================================
-   COLA DE EMISIÓN
+   COLA
    ========================================================= */
 function construirCola(incluirIntro){
   const c = [];
@@ -517,7 +522,7 @@ function renderCola(){
 }
 
 /* =========================================================
-   MOTOR DE REPRODUCCIÓN
+   MOTOR DE REPRODUCCIÓN (editor)
    ========================================================= */
 function setEstado(on, texto){
   const pill = $('statusPill');
@@ -528,7 +533,6 @@ function setEstado(on, texto){
 function iniciar(auto){
   leerConfig();
   validarUrlsSeguras();
-
   if(!cfg.intro && !cfg.ads.length && !cfg.movies.length){
     toast('⚠ Añade al menos una URL');
     return;
@@ -578,13 +582,11 @@ function playActual(){
 function cargarMedio(url){
   const miId = ++cargaId;
   clearTimeout(watchdog);
-
   if(hls){ hls.destroy(); hls = null; }
   video.pause();
   video.removeAttribute('src');
   video.load();
 
-  /* Bloqueo de contenido mixto */
   if(location.protocol === 'https:' && /^http:\/\//i.test(url)){
     console.warn('[MixedContent] Bloqueado:', url);
     toast('⚠ URL HTTP bloqueada en HTTPS, saltando…');
@@ -609,12 +611,8 @@ function cargarMedio(url){
     video.load();
     video.play().catch(()=>{});
   }
-
   watchdog = setTimeout(() => {
-    if(miId===cargaId && video.readyState < 2){
-      console.warn('[Watchdog] Fuente lenta, saltando…');
-      saltar();
-    }
+    if(miId===cargaId && video.readyState < 2) saltar();
   }, 20000);
 }
 function saltar(){ if(activo) siguiente(); }
@@ -629,7 +627,7 @@ video.addEventListener('stalled', () => {
 });
 
 /* =========================================================
-   GENERADOR DE PLAYLIST M3U
+   GENERADOR M3U (texto)
    ========================================================= */
 function generarM3U(){
   leerConfig();
@@ -683,79 +681,333 @@ function obtenerM3UActual(){
 }
 
 /* =========================================================
-   ★ ENLACE COMPARTIBLE (GITHUB PAGES)
-   Formato:  https://usuario.github.io/repo/#c=<base64>&auto=1
+   ★★★ WEB M3U CON REPRODUCTOR (página HTML autónoma) ★★★
+   ========================================================= */
+
+/* Plantilla del reproductor web autónomo */
+function plantillaPlayer(playlistJson, titulo){
+  const T = escapeHtml(titulo);
+  return `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>${T}</title>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"><\/script>
+<style>
+  html,body{margin:0;height:100%;background:#000;color:#fff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+  #stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000}
+  video{width:100%;height:100%;object-fit:contain;background:#000}
+  #badge{position:absolute;top:16px;left:16px;background:rgba(229,9,20,.95);padding:6px 12px;border-radius:6px;
+    font-size:12px;font-weight:800;letter-spacing:1.4px;display:flex;align-items:center;gap:7px;z-index:5}
+  #badge .pt{width:8px;height:8px;background:#fff;border-radius:50%;animation:bk 1.1s infinite}
+  @keyframes bk{50%{opacity:.15}}
+  #bar{position:absolute;top:16px;right:16px;display:flex;gap:8px;z-index:5}
+  #bar button{background:rgba(0,0,0,.65);border:1px solid #333;color:#fff;padding:9px 14px;border-radius:8px;
+    font-size:13px;font-weight:600;cursor:pointer;backdrop-filter:blur(6px);transition:.2s}
+  #bar button:hover{background:#1a1a28;border-color:#4a4a6a}
+  #info{position:absolute;left:0;right:0;bottom:0;padding:70px 20px 22px;
+    background:linear-gradient(transparent,rgba(0,0,0,.92));
+    display:flex;justify-content:space-between;gap:14px;align-items:flex-end;flex-wrap:wrap;pointer-events:none;z-index:4}
+  #tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:1.2px;padding:4px 9px;
+    border-radius:5px;background:#3ea6ff;color:#04121f;margin-bottom:7px}
+  #tag.INICIO{background:#22c55e;color:#04160a}
+  #tag.PUBLICIDAD{background:#f59e0b;color:#1c1200}
+  #t{font-size:20px;font-weight:700;line-height:1.25}
+  #s{font-size:13px;color:#b9b9d6;white-space:nowrap}
+  #gate{position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;
+    gap:18px;background:rgba(0,0,0,.88);cursor:pointer;z-index:20}
+  #gate.on{display:flex}
+  #gate .play{width:96px;height:96px;border-radius:50%;background:#e50914;display:grid;place-items:center;
+    font-size:38px;color:#fff;box-shadow:0 14px 44px rgba(229,9,20,.55);transition:.2s}
+  #gate:hover .play{transform:scale(1.06)}
+  #gate p{font-size:15px;color:#ccc;margin:0;letter-spacing:.4px}
+  #logo{position:absolute;bottom:22px;right:22px;font-size:11px;color:#555;letter-spacing:1px;z-index:4}
+  #msg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:#888;
+    font-size:14px;display:none;z-index:3}
+  @media(max-width:600px){#t{font-size:16px}#s{display:none}#bar button{padding:8px 11px;font-size:12px}}
+</style>
+</head>
+<body>
+<div id="stage">
+  <video id="v" playsinline controls preload="auto" autoplay></video>
+  <div id="badge"><span class="pt"></span> EN VIVO</div>
+  <div id="bar">
+    <button id="bSkip" title="Saltar al siguiente">⏭</button>
+    <button id="bFs" title="Pantalla completa">⛶</button>
+  </div>
+  <div id="msg">Cargando emisión…</div>
+  <div id="info">
+    <div>
+      <span id="tag">—</span>
+      <div id="t">Cargando…</div>
+    </div>
+    <div id="s"></div>
+  </div>
+  <div id="gate">
+    <div class="play">▶</div>
+    <p>Pulsa para iniciar la emisión</p>
+  </div>
+  <div id="logo">CINEFUSIÓN TV</div>
+</div>
+<script>
+(function(){
+  var PLAYLIST = ${playlistJson};
+  var i = 0, hls = null, wd = null, cid = 0, started = false;
+  var v = document.getElementById('v');
+  var gate = document.getElementById('gate');
+  var elTag = document.getElementById('tag');
+  var elT = document.getElementById('t');
+  var elS = document.getElementById('s');
+  var elMsg = document.getElementById('msg');
+
+  function intentarPlay(){
+    var p = v.play();
+    if(p && p.catch){
+      p.catch(function(){
+        gate.classList.add('on');
+      });
+    }
+  }
+
+  function load(item){
+    var my = ++cid;
+    clearTimeout(wd);
+    if(hls){ try{hls.destroy();}catch(e){} hls = null; }
+    v.pause();
+    v.removeAttribute('src');
+    v.load();
+
+    elTag.textContent = item.tipo || 'CANAL';
+    elTag.className = item.tipo || '';
+    elT.textContent = item.titulo || 'Canal';
+    var nx = PLAYLIST[(i + 1) % PLAYLIST.length];
+    elS.textContent = nx ? 'Siguiente: ' + nx.titulo : '';
+    elMsg.style.display = 'block';
+    elMsg.textContent = 'Cargando: ' + (item.titulo || '');
+
+    var isHls = /\\.m3u8(\\?|#|$)/i.test(item.url);
+
+    if(isHls && window.Hls && Hls.isSupported()){
+      hls = new Hls({ lowLatencyMode:true, liveDurationInfinity:true, maxBufferLength:30 });
+      hls.loadSource(item.url);
+      hls.attachMedia(v);
+      hls.on(Hls.Events.MANIFEST_PARSED, function(){
+        if(my !== cid) return;
+        elMsg.style.display = 'none';
+        intentarPlay();
+      });
+      hls.on(Hls.Events.ERROR, function(e, d){
+        if(my !== cid || !d || !d.fatal) return;
+        if(d.type === Hls.ErrorTypes.NETWORK_ERROR) hls.startLoad();
+        else if(d.type === Hls.ErrorTypes.MEDIA_ERROR) hls.recoverMediaError();
+        else next();
+      });
+    } else {
+      v.src = item.url;
+      v.load();
+      intentarPlay();
+    }
+
+    wd = setTimeout(function(){
+      if(my === cid && v.readyState < 2) next();
+    }, 20000);
+  }
+
+  function next(){
+    i = (i + 1) % PLAYLIST.length;
+    load(PLAYLIST[i]);
+  }
+
+  v.addEventListener('ended', next);
+  v.addEventListener('playing', function(){
+    clearTimeout(wd);
+    elMsg.style.display = 'none';
+    gate.classList.remove('on');
+  });
+  v.addEventListener('error', function(){ if(!hls) next(); });
+  v.addEventListener('waiting', function(){
+    if(v.readyState < 2) elMsg.style.display = 'block';
+  });
+
+  gate.addEventListener('click', function(){
+    gate.classList.remove('on');
+    intentarPlay();
+  });
+
+  document.getElementById('bSkip').addEventListener('click', next);
+  document.getElementById('bFs').addEventListener('click', function(){
+    if(document.fullscreenElement) document.exitFullscreen();
+    else if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(function(){});
+  });
+
+  /* Arranque */
+  if(PLAYLIST && PLAYLIST.length){
+    setTimeout(function(){ load(PLAYLIST[0]); }, 150);
+  } else {
+    elT.textContent = 'Sin contenido';
+    elMsg.style.display = 'block';
+    elMsg.textContent = 'La lista está vacía';
+  }
+})();
+<\/script>
+</body>
+</html>`;
+}
+
+/* Construye el HTML del reproductor con la cola actual */
+function construirHTMLReproductor(){
+  leerConfig();
+  if(!cfg.intro && !cfg.ads.length && !cfg.movies.length){
+    toast('⚠ Añade al menos una URL antes de convertir');
+    return null;
+  }
+  const c = construirCola(true);
+  if(!c.length){ toast('⚠ La cola está vacía'); return null; }
+
+  /* Escapamos "</" para que no rompa el bloque <script> del HTML generado */
+  const json = JSON.stringify(c).replace(/<\//g, '<\\/');
+  return plantillaPlayer(json, 'CinefusiónTV · Canal en vivo');
+}
+
+/* Aviso en el panel Web */
+function mostrarAvisoWeb(tipo, html){
+  const a = $('avisoWeb');
+  a.style.display = 'block';
+  a.className = 'aviso' + (tipo ? ' ' + tipo : '');
+  a.innerHTML = html;
+}
+
+/* ---- Generar Web M3U (Blob URL, abre al instante) ---- */
+function generarWebM3U(){
+  const html = construirHTMLReproductor();
+  if(!html) return;
+
+  if(urlWebBlob){ try{ URL.revokeObjectURL(urlWebBlob); }catch(e){} }
+  const blob = new Blob([html], { type:'text/html;charset=utf-8' });
+  urlWebBlob = URL.createObjectURL(blob);
+
+  $('urlWeb').value = urlWebBlob;
+
+  mostrarAvisoWeb('ok',
+    `✅ <b>Reproductor Web M3U generado</b> (${(html.length/1024).toFixed(1)} KB · ${cola.length} elementos).<br>
+     Se abrirá en una pestaña nueva. Esta URL funciona mientras esta pestaña esté abierta.
+     Para una URL permanente, pulsa <b>Descargar .html</b> y súbelo a GitHub Pages.`);
+
+  toast('🎬 Web M3U generada, abriendo reproductor…');
+  window.open(urlWebBlob, '_blank', 'noopener');
+}
+
+/* ---- Data URI (portable, se pega en el navegador) ---- */
+function generarWebData(){
+  const html = construirHTMLReproductor();
+  if(!html) return;
+
+  const b64 = b64encode(html);
+  const url = 'data:text/html;charset=utf-8;base64,' + b64;
+  $('urlWeb').value = url;
+
+  const largo = url.length;
+  mostrarAvisoWeb(largo > 400000 ? 'err' : '',
+    `ℹ <b>Data URI del reproductor</b> (${largo.toLocaleString('es-ES')} caracteres).<br>
+     Pégala en la barra del navegador y pulsa Enter → reproduce el canal al instante.
+     ${largo > 400000 ? '<br>⚠ Es muy larga; usa mejor el <b>.html descargable</b>.' : ''}`);
+
+  toast('🌐 Data URI del reproductor generada');
+}
+
+/* ---- Descargar HTML (para GitHub Pages) ---- */
+function descargarWebHTML(){
+  const html = construirHTMLReproductor();
+  if(!html) return;
+
+  const blob = new Blob([html], { type:'text/html;charset=utf-8' });
+  const href = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = href;
+  a.download = 'cinefusiontv-player.html';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(href), 4000);
+
+  mostrarAvisoWeb('ok',
+    `✅ Archivo <b>cinefusiontv-player.html</b> descargado.<br>
+     Súbelo a tu repositorio de GitHub Pages (Settings → Pages → rama main).
+     Tendrás una URL fija tipo <code>https://usuario.github.io/repo/cinefusiontv-player.html</code> que reproduce el canal sin problemas.`);
+
+  toast('⬇ Reproductor .html descargado');
+}
+
+function copiarUrlWeb(){
+  const v = $('urlWeb').value.trim();
+  if(!v){ toast('⚠ Genera primero el reproductor'); return; }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(v)
+      .then(()=>toast('📋 URL del reproductor copiada'))
+      .catch(()=>fallbackCopiar(v));
+  } else fallbackCopiar(v);
+}
+function abrirUrlWeb(){
+  const v = $('urlWeb').value.trim();
+  if(!v){ toast('⚠ Genera primero el reproductor'); return; }
+  const w = window.open(v, '_blank', 'noopener');
+  if(!w) toast('⚠ Permite las ventanas emergentes');
+}
+
+/* =========================================================
+   ENLACE COMPARTIBLE POR HASH
    ========================================================= */
 function generarEnlaceCompartible(){
   leerConfig();
-
   if(!cfg.intro && !cfg.ads.length && !cfg.movies.length){
-    toast('⚠ Añade al menos una URL antes de generar el enlace');
+    toast('⚠ Añade al menos una URL');
     return;
   }
-
   const json = serializarConfig();
   const b64  = toUrlSafe(b64encode(json));
   const base = location.origin + location.pathname;
   const url  = base + '#c=' + b64 + '&auto=1';
-
   $('urlUnica').value = url;
 
-  /* Aviso de longitud */
   const largo = url.length;
   const av = $('avisoUrl');
   av.style.display = 'block';
   if(largo > 3500){
     av.className = 'aviso err';
-    av.innerHTML = `⚠ El enlace es muy largo (${largo} caracteres). Algunos chats o reproductores lo cortarán. Considera usar <b>Data URI</b> o subir la lista como archivo <code>.m3u</code> a tu repositorio de GitHub.`;
+    av.innerHTML = `⚠ Enlace muy largo (${largo} caracteres). Usa mejor el <b>Web M3U descargable</b>.`;
   } else if(largo > 1800){
     av.className = 'aviso';
-    av.innerHTML = `ℹ Enlace de ${largo} caracteres. Funciona en la mayoría de casos, pero si lo pegas en un chat puede partirse en varias líneas.`;
+    av.innerHTML = `ℹ Enlace de ${largo} caracteres. Funciona en la mayoría de casos.`;
   } else {
     av.className = 'aviso ok';
-    av.innerHTML = `✅ Enlace listo (${largo} caracteres). Pégalo en cualquier reproductor o navegador.`;
+    av.innerHTML = `✅ Enlace listo (${largo} caracteres).`;
   }
-
   toast('🔗 Enlace compartible generado');
   return url;
 }
 
-/* ---------------------------------------------------------
-   Data URI (MIME estándar HLS)
-   --------------------------------------------------------- */
 function generarUrlData(){
   const m3u = obtenerM3UActual();
   const b64 = b64encode(m3u);
-  /* MIME estándar para HLS: application/vnd.apple.mpegurl */
-  urlData = 'data:application/vnd.apple.mpegurl;base64,' + b64;
-  $('urlUnica').value = urlData;
-
+  urlDataM3U = 'data:application/vnd.apple.mpegurl;base64,' + b64;
+  $('urlUnica').value = urlDataM3U;
   const av = $('avisoUrl');
   av.style.display = 'block';
   av.className = 'aviso';
-  av.innerHTML = `ℹ Data URI de ${urlData.length.toLocaleString('es-ES')} caracteres. Úsalo en <b>VLC / IPTV Smarters / TiviMate</b>. No lo pegues en chats (se cortará).`;
-  toast('🌐 Data URI generada');
+  av.innerHTML = `ℹ Data URI M3U de ${urlDataM3U.length.toLocaleString('es-ES')} caracteres. Úsalo en <b>VLC / IPTV Smarters / TiviMate</b>.`;
+  toast('🌐 Data URI M3U generada');
 }
 
-/* =========================================================
-   ★ LEER HASH AL CARGAR  (#c=<b64>&auto=1)
-   ========================================================= */
 function leerHash(){
   const h = location.hash.replace(/^#/,'');
   if(!h) return false;
-
   const params = new URLSearchParams(h);
   const c = params.get('c');
   if(!c) return false;
-
   try{
     const json = b64decode(fromUrlSafe(c));
     if(!deserializarConfig(json)) return false;
     return { auto: params.get('auto') === '1' };
-  }catch(e){
-    console.warn('[Hash] Config inválida:', e);
-    return false;
-  }
+  }catch(e){ return false; }
 }
 
 /* =========================================================
@@ -763,10 +1015,8 @@ function leerHash(){
    ========================================================= */
 async function copiarM3U(){
   const txt = $('salidaM3U').textContent;
-  try{
-    await navigator.clipboard.writeText(txt);
-    toast('📋 Copiado al portapapeles');
-  }catch(e){
+  try{ await navigator.clipboard.writeText(txt); toast('📋 Copiado al portapapeles'); }
+  catch(e){
     const ta = document.createElement('textarea');
     ta.value = txt; document.body.appendChild(ta); ta.select();
     document.execCommand('copy'); ta.remove();
@@ -785,10 +1035,7 @@ function descargarM3U(){
 }
 function importarM3U(){
   const texto = $('salidaM3U').textContent;
-  if(!texto || !/#EXTM3U/i.test(texto)){
-    toast('⚠ Pega primero una lista M3U válida');
-    return;
-  }
+  if(!texto || !/#EXTM3U/i.test(texto)){ toast('⚠ Pega primero una lista M3U válida'); return; }
   const lineas = texto.split('\n');
   const intro = [], ads = [], movies = [];
   let titulo = '', grupo = '';
@@ -815,15 +1062,13 @@ function importarM3U(){
 }
 
 /* =========================================================
-   COPIAR / PROBAR / ABRIR URL ÚNICA
+   COPIAR / PROBAR / ABRIR URL ÚNICA (hash)
    ========================================================= */
 function copiarUrlUnica(){
   const v = $('urlUnica').value.trim();
   if(!v){ toast('⚠ Genera primero un enlace'); return; }
   if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(v)
-      .then(()=>toast('📋 URL copiada al portapapeles'))
-      .catch(()=>fallbackCopiar(v));
+    navigator.clipboard.writeText(v).then(()=>toast('📋 URL copiada')).catch(()=>fallbackCopiar(v));
   } else fallbackCopiar(v);
 }
 function fallbackCopiar(v){
@@ -836,34 +1081,23 @@ function fallbackCopiar(v){
 function probarUrlUnica(){
   const v = $('urlUnica').value.trim();
   if(!v){ toast('⚠ Genera primero un enlace'); return; }
-
-  /* Enlace compartible del mismo origen con hash */
   if(v.startsWith(location.origin + location.pathname) || v.startsWith('#')){
     const hash = v.includes('#') ? v.substring(v.indexOf('#')) : v;
     location.hash = hash.substring(1);
     location.reload();
     return;
   }
-
-  /* Data URI */
   if(v.startsWith('data:')){
     try{
-      const i = v.indexOf(',');
-      const meta = v.substring(0, i);
-      const payload = v.substring(i+1);
-      const texto = /;base64/i.test(meta)
-        ? b64decode(payload)
-        : decodeURIComponent(payload);
+      const i2 = v.indexOf(',');
+      const meta = v.substring(0, i2);
+      const payload = v.substring(i2+1);
+      const texto = /;base64/i.test(meta) ? b64decode(payload) : decodeURIComponent(payload);
       cargarDesdeM3U(texto);
     }catch(e){ toast('⚠ Data URI inválida'); }
     return;
   }
-
-  /* URL remota */
-  fetch(v)
-    .then(r => r.text())
-    .then(txt => cargarDesdeM3U(txt))
-    .catch(()=> toast('⚠ No se pudo leer la URL (CORS)'));
+  fetch(v).then(r=>r.text()).then(txt=>cargarDesdeM3U(txt)).catch(()=> toast('⚠ No se pudo leer (CORS)'));
 }
 function abrirUrlUnica(){
   const v = $('urlUnica').value.trim();
@@ -873,7 +1107,7 @@ function abrirUrlUnica(){
 }
 function cargarDesdeM3U(texto){
   const items = parsearM3U(texto);
-  if(!items.length){ toast('⚠ M3U vacío o sin canales'); return; }
+  if(!items.length){ toast('⚠ M3U vacío'); return; }
   cola = items; idx = 0; activo = true;
   setEstado(true, 'EN EMISIÓN');
   renderCola();
@@ -935,7 +1169,14 @@ $('btnDescargar').addEventListener('click', descargarM3U);
 $('btnImportar').addEventListener('click', importarM3U);
 $('btnGuardar').addEventListener('click', () => { guardarLocal(); toast('💾 Configuración guardada'); });
 
-/* URL única */
+/* Web M3U */
+$('btnWebGenerar').addEventListener('click', generarWebM3U);
+$('btnWebData').addEventListener('click', generarWebData);
+$('btnWebCopiar').addEventListener('click', copiarUrlWeb);
+$('btnWebAbrir').addEventListener('click', abrirUrlWeb);
+$('btnWebDescargar').addEventListener('click', descargarWebHTML);
+
+/* URL compartible */
 $('btnUrlShare').addEventListener('click', generarEnlaceCompartible);
 $('btnUrlData').addEventListener('click', generarUrlData);
 $('btnCopiarUrl').addEventListener('click', copiarUrlUnica);
@@ -950,43 +1191,29 @@ $('chkLoop').addEventListener('change', () => { cfg.loop = $('chkLoop').checked;
 
 /* =========================================================
    ARRANQUE
-   ---------------------------------------------------------
-   Orden:
-   1) Si la URL trae #c=<config> → modo reproductor (solo player)
-   2) Si no, cargar localStorage
-   3) Si no hay nada, cargar demo
    ========================================================= */
 (function init(){
   const hash = leerHash();
 
   if(hash){
-    /* Modo reproductor compartido */
-    esModoPlayer = true;
     document.body.classList.add('modoPlayer');
     if($('chkLoop')) $('chkLoop').checked = true;
     cfg.loop = true;
-
     leerConfig();
     renderCola();
     console.log('%c▶ Modo reproductor · config desde URL','color:#7b2ff7;font-weight:bold');
-
-    if(hash.auto){
-      setTimeout(() => iniciar(true), 250);
-    } else {
-      toast('Pulsa ▶ Iniciar transmisión');
-    }
+    if(hash.auto) setTimeout(() => iniciar(true), 250);
+    else toast('Pulsa ▶ Iniciar transmisión');
     return;
   }
 
-  /* Modo editor */
   if(!cargarLocal()) cargarDemo();
   leerConfig();
   validarUrlsSeguras();
   renderCola();
-  console.log('%c🎬 CinefusiónTV · Editor + Enlace compartible listo','color:#e50914;font-weight:bold;font-size:14px');
+  console.log('%c🎬 CinefusiónTV · Web M3U con reproductor listo','color:#e50914;font-weight:bold;font-size:14px');
 })();
 
-/* Escuchar cambios de hash en caliente */
 window.addEventListener('hashchange', () => {
   const h = leerHash();
   if(h){
@@ -995,6 +1222,10 @@ window.addEventListener('hashchange', () => {
     renderCola();
     if(h.auto) iniciar(true);
   }
+});
+
+window.addEventListener('beforeunload', () => {
+  if(urlWebBlob){ try{ URL.revokeObjectURL(urlWebBlob); }catch(e){} }
 });
 </script>
 </body>
