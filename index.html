@@ -3,190 +3,121 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CinefusiónTV · Emisor Live + Web M3U con Reproductor</title>
+<title>CinefusiónTV · URL M3U Copiable + Reproductor Web</title>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
 <style>
   :root{
-    --bg:#07070c; --panel:#12121c; --panel2:#1a1a28; --line:#27273c;
-    --txt:#e9e9f2; --muted:#8b8ba7; --red:#e50914; --blue:#3ea6ff;
-    --green:#22c55e; --amber:#f59e0b; --purple:#7b2ff7;
+    --bg:#07070c;--panel:#12121c;--panel2:#1a1a28;--line:#27273c;
+    --txt:#e9e9f2;--muted:#8b8ba7;--red:#e50914;--blue:#3ea6ff;
+    --green:#22c55e;--amber:#f59e0b;--purple:#7b2ff7;
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
-  body{
-    background:radial-gradient(1200px 700px at 15% -10%, #1d1035 0%, var(--bg) 55%) fixed;
-    color:var(--txt);
-    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    min-height:100vh;
-  }
-  .top{
-    display:flex;align-items:center;justify-content:space-between;gap:16px;
-    padding:14px 22px;border-bottom:1px solid var(--line);
-    background:rgba(10,10,18,.75);backdrop-filter:blur(10px);
-    position:sticky;top:0;z-index:50;flex-wrap:wrap;
-  }
+  body{background:radial-gradient(1200px 700px at 15% -10%, #1d1035 0%, var(--bg) 55%) fixed;
+    color:var(--txt);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 22px;
+    border-bottom:1px solid var(--line);background:rgba(10,10,18,.75);backdrop-filter:blur(10px);
+    position:sticky;top:0;z-index:50;flex-wrap:wrap}
   .brand{display:flex;align-items:center;gap:12px}
-  .logo{
-    width:44px;height:44px;border-radius:12px;display:grid;place-items:center;
-    font-weight:900;font-size:22px;color:#fff;
-    background:linear-gradient(135deg,var(--red),var(--purple));
-    box-shadow:0 8px 24px rgba(229,9,20,.35);
-  }
+  .logo{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-weight:900;font-size:22px;
+    color:#fff;background:linear-gradient(135deg,var(--red),var(--purple));box-shadow:0 8px 24px rgba(229,9,20,.35)}
   .brand h1{margin:0;font-size:19px;letter-spacing:.5px}
   .brand h1 span{background:linear-gradient(90deg,var(--red),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}
   .brand p{margin:2px 0 0;font-size:11.5px;color:var(--muted);letter-spacing:.6px;text-transform:uppercase}
-  .status{
-    display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:1px;
-    padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);
-  }
+  .status{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:1px;
+    padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel)}
   .status .dot{width:9px;height:9px;border-radius:50%;background:#555;transition:.3s}
   .status.on{color:#ffdada;border-color:rgba(229,9,20,.5);background:rgba(229,9,20,.12)}
   .status.on .dot{background:var(--red);box-shadow:0 0 0 0 rgba(229,9,20,.7);animation:pulse 1.4s infinite}
   @keyframes pulse{70%{box-shadow:0 0 0 12px rgba(229,9,20,0)}100%{box-shadow:0 0 0 0 rgba(229,9,20,0)}}
-
-  .wrap{
-    max-width:1500px;margin:0 auto;padding:22px;
-    display:grid;grid-template-columns:minmax(0,1.55fr) minmax(370px,.9fr);gap:22px;
-  }
+  .wrap{max-width:1500px;margin:0 auto;padding:22px;display:grid;
+    grid-template-columns:minmax(0,1.55fr) minmax(370px,.9fr);gap:22px}
   @media(max-width:1050px){.wrap{grid-template-columns:1fr}}
-
-  .screen{
-    position:relative;background:#000;border-radius:16px;overflow:hidden;
-    aspect-ratio:16/9;border:1px solid var(--line);box-shadow:0 24px 60px rgba(0,0,0,.6);
-  }
+  .screen{position:relative;background:#000;border-radius:16px;overflow:hidden;aspect-ratio:16/9;
+    border:1px solid var(--line);box-shadow:0 24px 60px rgba(0,0,0,.6)}
   .screen video{width:100%;height:100%;display:block;background:#000;object-fit:contain}
-  .live-badge{
-    position:absolute;top:14px;left:14px;display:flex;align-items:center;gap:7px;
+  .live-badge{position:absolute;top:14px;left:14px;display:flex;align-items:center;gap:7px;
     background:rgba(229,9,20,.92);color:#fff;font-size:12px;font-weight:800;letter-spacing:1.4px;
-    padding:6px 12px;border-radius:6px;opacity:.45;transition:.3s;pointer-events:none;
-  }
+    padding:6px 12px;border-radius:6px;opacity:.45;transition:.3s;pointer-events:none}
   .live-badge.on{opacity:1}
   .live-badge .pt{width:8px;height:8px;background:#fff;border-radius:50%;animation:blink 1.1s infinite}
   @keyframes blink{50%{opacity:.15}}
-  .clock{
-    position:absolute;top:14px;right:14px;background:rgba(0,0,0,.6);border:1px solid var(--line);
+  .clock{position:absolute;top:14px;right:14px;background:rgba(0,0,0,.6);border:1px solid var(--line);
     color:#fff;font-size:12.5px;font-weight:700;letter-spacing:1px;padding:6px 12px;border-radius:6px;
-    font-variant-numeric:tabular-nums;pointer-events:none;
-  }
-  .overlay-info{
-    position:absolute;left:0;right:0;bottom:0;padding:40px 16px 14px;
-    background:linear-gradient(transparent,rgba(0,0,0,.9));
-    display:flex;align-items:flex-end;justify-content:space-between;gap:12px;pointer-events:none;flex-wrap:wrap;
-  }
+    font-variant-numeric:tabular-nums;pointer-events:none}
+  .overlay-info{position:absolute;left:0;right:0;bottom:0;padding:40px 16px 14px;
+    background:linear-gradient(transparent,rgba(0,0,0,.9));display:flex;align-items:flex-end;
+    justify-content:space-between;gap:12px;pointer-events:none;flex-wrap:wrap}
   .now{display:flex;align-items:center;gap:10px;min-width:0}
-  .tag{
-    font-size:10.5px;font-weight:800;letter-spacing:1.2px;padding:4px 9px;border-radius:5px;
-    background:var(--blue);color:#04121f;white-space:nowrap;
-  }
+  .tag{font-size:10.5px;font-weight:800;letter-spacing:1.2px;padding:4px 9px;border-radius:5px;
+    background:var(--blue);color:#04121f;white-space:nowrap}
   .tag.inicio{background:var(--green);color:#04160a}
   .tag.publicidad{background:var(--amber);color:#1c1200}
   .now .name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .next{font-size:12px;color:#c7c7dd;white-space:nowrap}
-
   .controles{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px}
-  .btn{
-    border:1px solid var(--line);background:var(--panel2);color:var(--txt);
-    padding:11px 16px;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;
-    transition:.18s;display:inline-flex;align-items:center;gap:7px;
-  }
+  .btn{border:1px solid var(--line);background:var(--panel2);color:var(--txt);padding:11px 16px;
+    border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;transition:.18s;
+    display:inline-flex;align-items:center;gap:7px}
   .btn:hover{background:#23233a;border-color:#3a3a58;transform:translateY(-1px)}
   .btn.primary{background:linear-gradient(135deg,var(--red),#a1070f);border-color:transparent;color:#fff}
-  .btn.primary:hover{filter:brightness(1.15)}
   .btn.blue{background:linear-gradient(135deg,#2563eb,var(--blue));border-color:transparent;color:#03121f}
   .btn.green{background:linear-gradient(135deg,#16a34a,var(--green));border-color:transparent;color:#02160a}
   .btn.purple{background:linear-gradient(135deg,var(--purple),#5b21b6);border-color:transparent;color:#fff}
   .btn.ghost{background:transparent}
-  .btn:disabled{opacity:.5;cursor:not-allowed}
   .switch{margin-left:auto;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
   .switch input{accent-color:var(--red);width:16px;height:16px;cursor:pointer}
-
-  .panel{
-    background:var(--panel);border:1px solid var(--line);border-radius:14px;
-    padding:16px;margin-top:18px;
-  }
-  .panel h3{
-    margin:0 0 12px;font-size:12px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);
-    display:flex;align-items:center;gap:8px;
-  }
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:18px}
+  .panel h3{margin:0 0 12px;font-size:12px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);
+    display:flex;align-items:center;gap:8px}
   .panel h3::after{content:"";flex:1;height:1px;background:var(--line)}
-
   .cola{list-style:none;margin:0;padding:0;max-height:260px;overflow:auto}
-  .cola li{
-    display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;
-    font-size:13px;border:1px solid transparent;
-  }
+  .cola li{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;font-size:13px;border:1px solid transparent}
   .cola li.activo{background:rgba(62,166,255,.12);border-color:rgba(62,166,255,.4)}
   .cola li .num{width:22px;color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
-  .cola li .tipo{font-size:9.5px;font-weight:800;letter-spacing:.8px;padding:3px 7px;border-radius:4px;background:#2a2a42;color:#b9b9d6;white-space:nowrap}
+  .cola li .tipo{font-size:9.5px;font-weight:800;letter-spacing:.8px;padding:3px 7px;border-radius:4px;
+    background:#2a2a42;color:#b9b9d6;white-space:nowrap}
   .cola li.activo .tipo{background:var(--blue);color:#04121f}
   .cola li .nom{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#d6d6e8}
   .cola .vacio{color:var(--muted);font-style:italic;justify-content:center}
-
-  label.f{display:block;font-size:11.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
+  label.f{display:block;font-size:11.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+    color:var(--muted);margin:14px 0 6px}
   label.f:first-child{margin-top:0}
-  textarea,input[type=text]{
-    width:100%;background:#0c0c15;border:1px solid var(--line);border-radius:10px;
+  textarea,input[type=text]{width:100%;background:#0c0c15;border:1px solid var(--line);border-radius:10px;
     color:var(--txt);padding:11px 12px;font-size:13px;font-family:ui-monospace,Menlo,Consolas,monospace;
-    resize:vertical;outline:none;transition:.2s;
-  }
+    resize:vertical;outline:none;transition:.2s}
   textarea:focus,input[type=text]:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(62,166,255,.14)}
   textarea{min-height:88px;line-height:1.5}
   .hint{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.55}
   .hint code{background:#1d1d2e;padding:1px 5px;border-radius:4px;color:#b9c8ff;word-break:break-all}
   .row{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
-
-  pre#salidaM3U{
-    background:#08080f;border:1px solid var(--line);border-radius:10px;padding:13px;
+  pre#salidaM3U{background:#08080f;border:1px solid var(--line);border-radius:10px;padding:13px;
     font-size:12px;line-height:1.6;color:#9fe8b0;max-height:220px;overflow:auto;
-    white-space:pre-wrap;word-break:break-all;margin:0;font-family:ui-monospace,Menlo,Consolas,monospace;
-  }
-  #urlUnica,#urlWeb{
-    font-size:11.5px;
-    background:#0a1420;
-    border-color:#1e3a5f;
-    cursor:text;
-  }
-  #urlUnica:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.15)}
+    white-space:pre-wrap;word-break:break-all;margin:0;font-family:ui-monospace,Menlo,Consolas,monospace}
+  #urlWeb{font-size:11px;background:#08131f;border-color:#1e3a5f;min-height:72px;cursor:text;word-break:break-all}
   #urlWeb:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(62,166,255,.2)}
-  #urlWeb{border-color:#1e3a5f;background:#08131f}
-
-  .badge-unica,.badge-gh,.badge-web{
-    display:inline-block;font-size:10px;font-weight:800;letter-spacing:1px;
-    padding:3px 8px;border-radius:4px;margin-left:8px;
-  }
-  .badge-unica{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.35)}
-  .badge-gh{background:rgba(123,47,247,.15);color:#c4a6ff;border:1px solid rgba(123,47,247,.4)}
-  .badge-web{background:rgba(62,166,255,.15);color:#7dd3fc;border:1px solid rgba(62,166,255,.45)}
-
-  .aviso{
-    margin-top:10px;padding:10px 12px;border-radius:9px;font-size:12px;line-height:1.55;
-    background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.35);color:#fcd34d;
-  }
+  .badge-web{display:inline-block;font-size:10px;font-weight:800;letter-spacing:1px;padding:3px 8px;
+    border-radius:4px;margin-left:8px;background:rgba(62,166,255,.15);color:#7dd3fc;border:1px solid rgba(62,166,255,.45)}
+  .badge-gh{display:inline-block;font-size:10px;font-weight:800;letter-spacing:1px;padding:3px 8px;
+    border-radius:4px;margin-left:8px;background:rgba(123,47,247,.15);color:#c4a6ff;border:1px solid rgba(123,47,247,.4)}
+  .aviso{margin-top:10px;padding:10px 12px;border-radius:9px;font-size:12px;line-height:1.55;
+    background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.35);color:#fcd34d}
   .aviso.err{background:rgba(229,9,20,.08);border-color:rgba(229,9,20,.4);color:#ffb4b4}
-  .aviso.ok {background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.4);color:#86efac}
-  .aviso strong{color:inherit}
-
-  .toast{
-    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(90px);
-    background:var(--green);color:#05200f;font-weight:700;font-size:13.5px;
-    padding:11px 22px;border-radius:10px;transition:.35s;z-index:999;box-shadow:0 12px 30px rgba(0,0,0,.5);
-    max-width:90vw;text-align:center;
-  }
+  .aviso.ok{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.4);color:#86efac}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(90px);
+    background:var(--green);color:#05200f;font-weight:700;font-size:13.5px;padding:11px 22px;
+    border-radius:10px;transition:.35s;z-index:999;box-shadow:0 12px 30px rgba(0,0,0,.5);
+    max-width:90vw;text-align:center}
   .toast.show{transform:translateX(-50%) translateY(0)}
   ::-webkit-scrollbar{width:9px;height:9px}
   ::-webkit-scrollbar-track{background:transparent}
   ::-webkit-scrollbar-thumb{background:#2c2c44;border-radius:5px}
   ::-webkit-scrollbar-thumb:hover{background:#3d3d5c}
-
   body.modoPlayer .wrap{grid-template-columns:1fr}
   body.modoPlayer aside{display:none}
-  body.modoPlayer .controles #btnDemo,
-  body.modoPlayer .controles .switch{display:none}
-  .playerNote{
-    display:none;margin-bottom:14px;padding:11px 14px;border-radius:10px;
-    background:rgba(123,47,247,.12);border:1px solid rgba(123,47,247,.45);
-    color:#d9c7ff;font-size:13px;line-height:1.5;
-  }
+  body.modoPlayer .controles #btnDemo,body.modoPlayer .controles .switch{display:none}
+  .playerNote{display:none;margin-bottom:14px;padding:11px 14px;border-radius:10px;
+    background:rgba(123,47,247,.12);border:1px solid rgba(123,47,247,.45);color:#d9c7ff;font-size:13px;line-height:1.5}
   body.modoPlayer .playerNote{display:block}
 </style>
 </head>
@@ -197,20 +128,17 @@
     <div class="logo">C</div>
     <div>
       <h1>Cinefusión<span>TV</span></h1>
-      <p>Emisor Live · Web M3U con Reproductor</p>
+      <p>URL M3U Copiable · Reproductor Web Universal</p>
     </div>
   </div>
   <div class="status" id="statusPill"><span class="dot"></span> <span id="statusTxt">DETENIDO</span></div>
 </header>
 
 <main class="wrap">
-
-  <!-- ============ COLUMNA IZQUIERDA: REPRODUCTOR ============ -->
   <section>
     <div class="playerNote" id="playerNote">
       ▶ Estás viendo un <b>canal compartido de CinefusiónTV</b>. La emisión arrancará automáticamente.
     </div>
-
     <div class="screen">
       <video id="player" playsinline controls preload="auto"></video>
       <div class="live-badge" id="liveBadge"><span class="pt"></span> EN VIVO</div>
@@ -223,7 +151,6 @@
         <div class="next" id="siguienteTxt">Siguiente: —</div>
       </div>
     </div>
-
     <div class="controles">
       <button class="btn primary" id="btnPlay">▶ Iniciar transmisión</button>
       <button class="btn" id="btnStop">■ Detener</button>
@@ -231,95 +158,74 @@
       <button class="btn ghost" id="btnDemo">⚡ Cargar demo</button>
       <label class="switch"><input type="checkbox" id="chkLoop" checked> Bucle infinito (24/7)</label>
     </div>
-
     <div class="panel">
       <h3>Cola de emisión</h3>
-      <ul class="cola" id="listaCola">
-        <li class="vacio">Añade URLs y pulsa «Iniciar transmisión»</li>
-      </ul>
+      <ul class="cola" id="listaCola"><li class="vacio">Añade URLs y pulsa «Iniciar transmisión»</li></ul>
     </div>
   </section>
 
-  <!-- ============ COLUMNA DERECHA ============ -->
   <aside>
-
     <div class="panel">
       <h3>1 · URLs del canal</h3>
-
       <label class="f">🎬 Inicio / Intro (1 URL)</label>
-      <textarea id="inIntro" placeholder="https://mi-servidor.com/intro-cinefusion.mp4"></textarea>
-
+      <textarea id="inIntro" placeholder="https://mi-servidor.com/intro.mp4"></textarea>
       <label class="f">📢 Publicidad (una por línea)</label>
-      <textarea id="inAds" placeholder="Comercial Cinefusión | https://servidor.com/ad1.mp4&#10;https://servidor.com/ad2.mp4"></textarea>
-
+      <textarea id="inAds" placeholder="Comercial 1 | https://servidor.com/ad1.mp4&#10;https://servidor.com/ad2.mp4"></textarea>
       <label class="f">🍿 Películas (una por línea)</label>
       <textarea id="inMovies" placeholder="Big Buck Bunny | https://servidor.com/peli1.mp4&#10;https://servidor.com/peli2.m3u8"></textarea>
-
-      <p class="hint">
-        Formato: <code>URL</code> o <code>Título | URL</code>.<br>
-        Soporta <b>MP4 / WebM</b> y <b>HLS (.m3u8)</b> vía hls.js.
-      </p>
-
+      <p class="hint">Formato: <code>URL</code> o <code>Título | URL</code>. Soporta MP4/WebM y HLS (.m3u8).</p>
       <div id="avisoHttps"></div>
-
       <div class="row">
         <button class="btn blue" id="btnGenerar">🎛 Generar M3U</button>
         <button class="btn ghost" id="btnGuardar">💾 Guardar</button>
       </div>
     </div>
 
-    <!-- ====== ★ NUEVO: WEB M3U CON REPRODUCTOR ====== -->
-    <div class="panel" style="border-color:rgba(62,166,255,.45);background:linear-gradient(180deg,rgba(62,166,255,.07),transparent 60%)">
-      <h3>🎬 Web M3U con Reproductor <span class="badge-web">NUEVO</span></h3>
-
+    <!-- ===== URL M3U COPIABLE ===== -->
+    <div class="panel" style="border-color:rgba(62,166,255,.5);background:linear-gradient(180deg,rgba(62,166,255,.08),transparent 60%)">
+      <h3>🔗 URL M3U Copiable 100% <span class="badge-web">SIN BLOB</span></h3>
       <p class="hint" style="margin-top:0">
-        Convierte tu lista M3U en una <b>página web autónoma con reproductor de video integrado</b>.
-        Genera una URL que al abrirla reproduce el canal automáticamente, sin instalar nada.
+        Genera una URL <b>data:</b> con el M3U completo. Cópiala y pégala en
+        <b>VLC, IPTV Smarters, TiviMate, OTT Navigator, web players</b>… o ábrela en el navegador para ver el reproductor.
       </p>
 
-      <label class="f">🔗 URL del reproductor web</label>
-      <input type="text" id="urlWeb" readonly placeholder="Pulsa «Convertir a Web M3U» para crear el reproductor…">
+      <label class="f">URL generada (texto completo, copiable)</label>
+      <textarea id="urlWeb" readonly placeholder="Pulsa un botón para generar la URL…"></textarea>
+      <p class="hint" id="urlWebInfo">— longitud en caracteres —</p>
 
       <div class="row">
-        <button class="btn primary" id="btnWebGenerar">🎬 Convertir a Web M3U</button>
-        <button class="btn blue" id="btnWebData">🌐 Data URI</button>
+        <button class="btn primary" id="btnUrlM3U">📼 Generar URL M3U (playlist)</button>
+        <button class="btn blue"   id="btnUrlPlayer">▶ Generar URL Reproductor</button>
       </div>
       <div class="row" style="margin-top:9px">
-        <button class="btn green" id="btnWebCopiar">📋 Copiar URL</button>
-        <button class="btn" id="btnWebAbrir">▶ Abrir reproductor</button>
-        <button class="btn ghost" id="btnWebDescargar">⬇ Descargar .html</button>
+        <button class="btn green"  id="btnCopiarTodo">📋 Copiar TODO</button>
+        <button class="btn"        id="btnProbarWeb">▶ Probar</button>
+        <button class="btn ghost"  id="btnEmbedCode">📎 Código Embed</button>
+      </div>
+      <div class="row" style="margin-top:9px">
+        <button class="btn ghost"  id="btnDescargarHtml">⬇ Descargar .html</button>
+        <button class="btn ghost"  id="btnDescargarM3UFile">⬇ Descargar .m3u</button>
       </div>
 
       <div class="aviso" id="avisoWeb" style="display:none"></div>
 
       <p class="hint">
-        <b>Blob URL:</b> se abre al instante en una pestaña nueva (vive mientras esta pestaña esté abierta).<br>
-        <b>Data URI:</b> portable, se pega en el navegador y reproduce directo.<br>
-        <b>Descargar .html:</b> ideal para GitHub Pages → súbelo y tendrás una URL fija y permanente.
+        <b>📼 URL M3U (playlist):</b> es literalmente la lista M3U codificada. Pégala en cualquier reproductor IPTV y reproduce toda la secuencia.<br>
+        <b>▶ URL Reproductor:</b> es una página HTML completa. Ábrela en un navegador y verás el reproductor en marcha.<br>
+        <b>📎 Código Embed:</b> pégala en cualquier web (WordPress, Blogger, etc.) y el reproductor aparecerá incrustado.
       </p>
     </div>
 
-    <!-- ====== URL ÚNICA (hash) ====== -->
     <div class="panel" style="border-color:rgba(123,47,247,.4);background:linear-gradient(180deg,rgba(123,47,247,.07),transparent 60%)">
-      <h3>🔗 URL compartible (hash) <span class="badge-gh">GITHUB PAGES</span></h3>
-
-      <p class="hint" style="margin-top:0">
-        Enlace corto que carga <b>esta misma página</b> en modo reproductor con tu configuración.
-      </p>
-
+      <h3>🔗 Enlace compartible (hash) <span class="badge-gh">GITHUB PAGES</span></h3>
+      <p class="hint" style="margin-top:0">Enlace corto que carga <b>esta misma página</b> en modo reproductor.</p>
       <label class="f">Enlace compartible</label>
       <input type="text" id="urlUnica" readonly placeholder="Pulsa «Generar enlace»…">
-
       <div class="row">
         <button class="btn purple" id="btnUrlShare">🔗 Generar enlace</button>
-        <button class="btn"        id="btnUrlData">🌐 Data URI M3U</button>
+        <button class="btn green"  id="btnCopiarUrl">📋 Copiar</button>
+        <button class="btn"        id="btnProbarUrl">▶ Probar aquí</button>
       </div>
-      <div class="row" style="margin-top:9px">
-        <button class="btn green" id="btnCopiarUrl">📋 Copiar URL</button>
-        <button class="btn"       id="btnProbarUrl">▶ Probar aquí</button>
-        <button class="btn ghost" id="btnAbrirUrl">↗ Abrir en pestaña</button>
-      </div>
-
       <div class="aviso" id="avisoUrl" style="display:none"></div>
     </div>
 
@@ -333,159 +239,102 @@
         <button class="btn ghost" id="btnImportar">📥 Importar M3U</button>
       </div>
     </div>
-
   </aside>
 </main>
 
 <div class="toast" id="toast">Listo</div>
 
 <script>
-/* =========================================================
-   CINEFUSIÓNTV · LIVE + WEB M3U CON REPRODUCTOR
-   ========================================================= */
 const $ = id => document.getElementById(id);
+const video = $('player');
+const liveBadge = $('liveBadge');
+const listaCola = $('listaCola');
 
-const video      = $('player');
-const liveBadge  = $('liveBadge');
-const listaCola  = $('listaCola');
+let hls=null, cola=[], idx=0, activo=false, cargaId=0, watchdog=null;
+let cfg = { intro:null, ads:[], movies:[], loop:true };
 
-let hls        = null;
-let cola       = [];
-let idx        = 0;
-let activo     = false;
-let cargaId    = 0;
-let watchdog   = null;
-let cfg        = { intro:null, ads:[], movies:[], loop:true };
-let urlDataM3U = '';
-let urlWebBlob = null;
-
-/* ---------------------------------------------------------
-   BASE64 UTF-8 SAFE
-   --------------------------------------------------------- */
+/* ---------- Base64 UTF-8 safe ---------- */
 function b64encode(str){
   const bytes = new TextEncoder().encode(str);
-  let bin = '';
-  const CHUNK = 0x8000;
-  for(let i=0;i<bytes.length;i+=CHUNK){
-    bin += String.fromCharCode.apply(null, bytes.subarray(i, i+CHUNK));
-  }
+  let bin=''; const CHUNK=0x8000;
+  for(let i=0;i<bytes.length;i+=CHUNK) bin += String.fromCharCode.apply(null, bytes.subarray(i,i+CHUNK));
   return btoa(bin);
 }
 function b64decode(b64){
-  const bin = atob(b64);
-  const bytes = new Uint8Array(bin.length);
+  const bin = atob(b64); const bytes = new Uint8Array(bin.length);
   for(let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
   return new TextDecoder().decode(bytes);
 }
 function toUrlSafe(b64){ return b64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
-function fromUrlSafe(s){
-  s = s.replace(/-/g,'+').replace(/_/g,'/');
-  while(s.length % 4) s += '=';
-  return s;
-}
+function fromUrlSafe(s){ s=s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4) s+='='; return s; }
 
-/* ---------------------------------------------------------
-   Utilidades
-   --------------------------------------------------------- */
-function escapeHtml(s){
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
+/* ---------- Utilidades ---------- */
+const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function nombreDesdeUrl(url){
   try{
     const limpio = url.split('?')[0].split('#')[0];
-    const base = limpio.substring(limpio.lastIndexOf('/') + 1) || 'elemento';
+    const base = limpio.substring(limpio.lastIndexOf('/')+1) || 'elemento';
     return decodeURIComponent(base).replace(/\.[a-z0-9]{2,5}$/i,'') || 'elemento';
   }catch(e){ return 'elemento'; }
 }
 function parseLinea(linea){
-  const partes = linea.split('|');
-  if(partes.length >= 2){
-    const url = partes[partes.length-1].trim();
-    const titulo = partes.slice(0,-1).join('|').trim();
+  const p = linea.split('|');
+  if(p.length>=2){
+    const url = p[p.length-1].trim();
+    const titulo = p.slice(0,-1).join('|').trim();
     return { titulo: titulo || nombreDesdeUrl(url), url };
   }
   const url = linea.trim();
   return { titulo: nombreDesdeUrl(url), url };
 }
-function limpiarLineas(txt){
-  return txt.split('\n').map(s=>s.trim()).filter(s => s && !s.startsWith('#'));
-}
+const limpiarLineas = txt => txt.split('\n').map(s=>s.trim()).filter(s=>s && !s.startsWith('#'));
 function toast(msg){
-  const t = $('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(t._tm);
-  t._tm = setTimeout(()=>t.classList.remove('show'), 2800);
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._tm); t._tm = setTimeout(()=>t.classList.remove('show'), 2800);
 }
-function slug(txt){
-  return String(txt).toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-    .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').substring(0,40) || 'canal';
-}
+const slug = txt => String(txt).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+  .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').substring(0,40) || 'canal';
 
-setInterval(()=>{
-  const d = new Date();
-  $('reloj').textContent = d.toLocaleTimeString('es-ES',{hour12:false});
-}, 1000);
+setInterval(()=>{ $('reloj').textContent = new Date().toLocaleTimeString('es-ES',{hour12:false}); }, 1000);
 
 /* =========================================================
-   CONFIGURACIÓN
+   CONFIG
    ========================================================= */
 function leerConfig(){
   const introRaw = limpiarLineas($('inIntro').value);
-  cfg.intro   = introRaw.length ? parseLinea(introRaw[0]) : null;
-  cfg.ads     = limpiarLineas($('inAds').value).map(parseLinea);
-  cfg.movies  = limpiarLineas($('inMovies').value).map(parseLinea);
-  cfg.loop    = $('chkLoop').checked;
+  cfg.intro = introRaw.length ? parseLinea(introRaw[0]) : null;
+  cfg.ads = limpiarLineas($('inAds').value).map(parseLinea);
+  cfg.movies = limpiarLineas($('inMovies').value).map(parseLinea);
+  cfg.loop = $('chkLoop').checked;
   return cfg;
 }
-function serializarConfig(){
-  return JSON.stringify({
-    intro:  $('inIntro').value,
-    ads:    $('inAds').value,
-    movies: $('inMovies').value
-  });
-}
+const serializarConfig = () => JSON.stringify({
+  intro:$('inIntro').value, ads:$('inAds').value, movies:$('inMovies').value
+});
 function deserializarConfig(str){
   try{
     const o = JSON.parse(str);
-    if(o && typeof o === 'object'){
-      $('inIntro').value  = o.intro  || '';
-      $('inAds').value    = o.ads    || '';
+    if(o && typeof o==='object'){
+      $('inIntro').value = o.intro || '';
+      $('inAds').value = o.ads || '';
       $('inMovies').value = o.movies || '';
       return true;
     }
   }catch(e){}
   return false;
 }
-function guardarLocal(){
-  try{ localStorage.setItem('cinefusion_cfg', serializarConfig()); }catch(e){}
-}
+function guardarLocal(){ try{ localStorage.setItem('cinefusion_cfg', serializarConfig()); }catch(e){} }
 function cargarLocal(){
-  try{
-    const raw = localStorage.getItem('cinefusion_cfg');
-    if(!raw) return false;
-    return deserializarConfig(raw);
-  }catch(e){ return false; }
+  try{ const raw = localStorage.getItem('cinefusion_cfg'); return raw ? deserializarConfig(raw) : false; }
+  catch(e){ return false; }
 }
 function validarUrlsSeguras(){
-  const cont = $('avisoHttps');
-  cont.innerHTML = '';
+  const cont = $('avisoHttps'); cont.innerHTML = '';
   if(location.protocol !== 'https:') return;
-
-  const todas = [
-    $('inIntro').value, $('inAds').value, $('inMovies').value
-  ].join('\n').split('\n').map(s=>{
-    const p = s.split('|');
-    return p[p.length-1].trim();
-  }).filter(u => /^http:\/\//i.test(u));
-
-  if(todas.length){
-    cont.innerHTML = `<div class="aviso err">
-      ⚠ <strong>${todas.length} URL(s) usan HTTP</strong> y no cargarán desde HTTPS (contenido mixto).
-      Cámbialas a <b>HTTPS</b> o súbelas a un hosting con SSL.
-    </div>`;
-  }
+  const todas = [$('inIntro').value, $('inAds').value, $('inMovies').value].join('\n').split('\n')
+    .map(s=>{ const p=s.split('|'); return p[p.length-1].trim(); })
+    .filter(u=>/^http:\/\//i.test(u));
+  if(todas.length) cont.innerHTML = `<div class="aviso err">⚠ <strong>${todas.length} URL(s) usan HTTP</strong> y no cargarán desde HTTPS (contenido mixto). Cámbialas a HTTPS.</div>`;
 }
 
 /* =========================================================
@@ -493,26 +342,22 @@ function validarUrlsSeguras(){
    ========================================================= */
 function construirCola(incluirIntro){
   const c = [];
-  if(incluirIntro && cfg.intro) c.push({ tipo:'INICIO', titulo:cfg.intro.titulo, url:cfg.intro.url });
-
+  if(incluirIntro && cfg.intro) c.push({tipo:'INICIO', titulo:cfg.intro.titulo, url:cfg.intro.url});
   if(cfg.movies.length){
-    cfg.movies.forEach((m, i) => {
+    cfg.movies.forEach((m,i)=>{
       if(cfg.ads.length){
         const a = cfg.ads[i % cfg.ads.length];
-        c.push({ tipo:'PUBLICIDAD', titulo:a.titulo, url:a.url });
+        c.push({tipo:'PUBLICIDAD', titulo:a.titulo, url:a.url});
       }
-      c.push({ tipo:'PELÍCULA', titulo:m.titulo, url:m.url });
+      c.push({tipo:'PELÍCULA', titulo:m.titulo, url:m.url});
     });
   } else {
-    cfg.ads.forEach(a => c.push({ tipo:'PUBLICIDAD', titulo:a.titulo, url:a.url }));
+    cfg.ads.forEach(a => c.push({tipo:'PUBLICIDAD', titulo:a.titulo, url:a.url}));
   }
   return c;
 }
 function renderCola(){
-  if(!cola.length){
-    listaCola.innerHTML = '<li class="vacio">Sin elementos en la cola</li>';
-    return;
-  }
+  if(!cola.length){ listaCola.innerHTML = '<li class="vacio">Sin elementos en la cola</li>'; return; }
   listaCola.innerHTML = cola.map((it,i)=>`
     <li class="${i===idx?'activo':''}">
       <span class="num">${String(i+1).padStart(2,'0')}</span>
@@ -522,135 +367,102 @@ function renderCola(){
 }
 
 /* =========================================================
-   MOTOR DE REPRODUCCIÓN (editor)
+   MOTOR
    ========================================================= */
 function setEstado(on, texto){
-  const pill = $('statusPill');
-  pill.classList.toggle('on', on);
+  $('statusPill').classList.toggle('on', on);
   $('statusTxt').textContent = texto;
   liveBadge.classList.toggle('on', on);
 }
 function iniciar(auto){
-  leerConfig();
-  validarUrlsSeguras();
-  if(!cfg.intro && !cfg.ads.length && !cfg.movies.length){
-    toast('⚠ Añade al menos una URL');
-    return;
-  }
-  activo = true;
-  cola = construirCola(true);
-  idx = 0;
-  setEstado(true, 'EN EMISIÓN');
-  renderCola();
-  playActual();
+  leerConfig(); validarUrlsSeguras();
+  if(!cfg.intro && !cfg.ads.length && !cfg.movies.length){ toast('⚠ Añade al menos una URL'); return; }
+  activo = true; cola = construirCola(true); idx = 0;
+  setEstado(true, 'EN EMISIÓN'); renderCola(); playActual();
   if(!auto) toast('🔴 Transmisión iniciada');
 }
 function detener(){
-  activo = false;
-  cargaId++;
-  clearTimeout(watchdog);
-  if(hls){ hls.destroy(); hls = null; }
-  video.pause();
-  video.removeAttribute('src');
-  video.load();
+  activo = false; cargaId++; clearTimeout(watchdog);
+  if(hls){ hls.destroy(); hls=null; }
+  video.pause(); video.removeAttribute('src'); video.load();
   setEstado(false, 'DETENIDO');
-  $('tipoActual').textContent = '—';
-  $('tituloActual').textContent = 'Sin emisión';
-  $('siguienteTxt').textContent = 'Siguiente: —';
+  $('tipoActual').textContent='—'; $('tituloActual').textContent='Sin emisión';
+  $('siguienteTxt').textContent='Siguiente: —';
 }
 function siguiente(){
   if(!activo) return;
   idx++;
   if(idx >= cola.length){
     if(!cfg.loop){ detener(); return; }
-    cola = construirCola(false);
-    idx = 0;
+    cola = construirCola(false); idx = 0;
     if(!cola.length){ detener(); return; }
   }
   playActual();
 }
 function playActual(){
-  const item = cola[idx];
-  if(!item) return;
+  const item = cola[idx]; if(!item) return;
   $('tipoActual').textContent = item.tipo;
   $('tituloActual').textContent = item.titulo;
   const sig = cola[idx+1] || (cfg.loop && cola.length ? cola[0] : null);
   $('siguienteTxt').textContent = 'Siguiente: ' + (sig ? sig.titulo : '—');
-  renderCola();
-  cargarMedio(item.url);
+  renderCola(); cargarMedio(item.url);
 }
 function cargarMedio(url){
   const miId = ++cargaId;
   clearTimeout(watchdog);
-  if(hls){ hls.destroy(); hls = null; }
-  video.pause();
-  video.removeAttribute('src');
-  video.load();
+  if(hls){ hls.destroy(); hls=null; }
+  video.pause(); video.removeAttribute('src'); video.load();
 
   if(location.protocol === 'https:' && /^http:\/\//i.test(url)){
-    console.warn('[MixedContent] Bloqueado:', url);
+    console.warn('[MixedContent]', url);
     toast('⚠ URL HTTP bloqueada en HTTPS, saltando…');
     setTimeout(()=>{ if(miId===cargaId) saltar(); }, 900);
     return;
   }
-
   const esHLS = /\.m3u8(\?|#|$)/i.test(url);
   if(esHLS && window.Hls && Hls.isSupported()){
-    hls = new Hls({ lowLatencyMode:true, liveDurationInfinity:true, maxBufferLength:30, manifestLoadingTimeOut:15000 });
-    hls.loadSource(url);
-    hls.attachMedia(video);
-    hls.on(Hls.Events.MANIFEST_PARSED, () => { if(miId===cargaId) video.play().catch(()=>{}); });
-    hls.on(Hls.Events.ERROR, (evt,data) => {
-      if(miId !== cargaId || !data.fatal) return;
-      if(data.type === Hls.ErrorTypes.NETWORK_ERROR)    hls.startLoad();
-      else if(data.type === Hls.ErrorTypes.MEDIA_ERROR) hls.recoverMediaError();
+    hls = new Hls({lowLatencyMode:true, liveDurationInfinity:true, maxBufferLength:30, manifestLoadingTimeOut:15000});
+    hls.loadSource(url); hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED, ()=>{ if(miId===cargaId) video.play().catch(()=>{}); });
+    hls.on(Hls.Events.ERROR, (e,d)=>{
+      if(miId!==cargaId || !d.fatal) return;
+      if(d.type===Hls.ErrorTypes.NETWORK_ERROR) hls.startLoad();
+      else if(d.type===Hls.ErrorTypes.MEDIA_ERROR) hls.recoverMediaError();
       else saltar();
     });
   } else {
-    video.src = url;
-    video.load();
-    video.play().catch(()=>{});
+    video.src = url; video.load(); video.play().catch(()=>{});
   }
-  watchdog = setTimeout(() => {
-    if(miId===cargaId && video.readyState < 2) saltar();
-  }, 20000);
+  watchdog = setTimeout(()=>{ if(miId===cargaId && video.readyState<2) saltar(); }, 20000);
 }
 function saltar(){ if(activo) siguiente(); }
 
-video.addEventListener('ended', () => { if(activo) siguiente(); });
-video.addEventListener('playing', () => clearTimeout(watchdog));
-video.addEventListener('error', () => { if(activo && !hls) saltar(); });
-video.addEventListener('stalled', () => {
+video.addEventListener('ended', ()=>{ if(activo) siguiente(); });
+video.addEventListener('playing', ()=> clearTimeout(watchdog));
+video.addEventListener('error', ()=>{ if(activo && !hls) saltar(); });
+video.addEventListener('stalled', ()=>{
   if(!activo) return;
   clearTimeout(watchdog);
-  watchdog = setTimeout(() => { if(video.readyState < 2) saltar(); }, 12000);
+  watchdog = setTimeout(()=>{ if(video.readyState<2) saltar(); }, 12000);
 });
 
 /* =========================================================
-   GENERADOR M3U (texto)
+   M3U TEXTO
    ========================================================= */
 function generarM3U(){
   leerConfig();
   const L = [];
-  L.push('#EXTM3U');
-  L.push('#EXTENC:UTF-8');
+  L.push('#EXTM3U'); L.push('#EXTENC:UTF-8');
   L.push('# Generado por CinefusiónTV · ' + new Date().toLocaleString('es-ES'));
-  L.push('# Playlist secuencial tipo canal de TV en vivo');
-  L.push('');
-
+  L.push('# Playlist secuencial tipo canal de TV en vivo'); L.push('');
   const emitir = (titulo, url, grupo) => {
     L.push(`#EXTINF:-1 tvg-id="${slug(titulo)}" tvg-name="${titulo}" tvg-logo="" group-title="${grupo}",${titulo}`);
     L.push(url);
   };
-
-  L.push('# ================================================');
-  L.push('#  SECUENCIA DE EMISIÓN (orden del canal)');
-  L.push('# ================================================');
-
+  L.push('# ======= SECUENCIA DE EMISIÓN =======');
   if(cfg.intro) emitir('Inicio · CinefusiónTV', cfg.intro.url, 'CinefusiónTV · Inicio');
-
   if(cfg.movies.length){
-    cfg.movies.forEach((m,i) => {
+    cfg.movies.forEach((m,i)=>{
       if(cfg.ads.length){
         const a = cfg.ads[i % cfg.ads.length];
         emitir('Publicidad ' + (i+1), a.url, 'CinefusiónTV · Publicidad');
@@ -658,18 +470,12 @@ function generarM3U(){
       emitir(m.titulo, m.url, 'CinefusiónTV · Películas');
     });
   } else {
-    cfg.ads.forEach((a,i) => emitir(a.titulo || ('Publicidad ' + (i+1)), a.url, 'CinefusiónTV · Publicidad'));
+    cfg.ads.forEach((a,i)=> emitir(a.titulo || ('Publicidad '+(i+1)), a.url, 'CinefusiónTV · Publicidad'));
   }
-
-  L.push('');
-  L.push('# ================================================');
-  L.push('#  CATÁLOGO AGRUPADO');
-  L.push('# ================================================');
-
+  L.push(''); L.push('# ======= CATÁLOGO AGRUPADO =======');
   if(cfg.intro) emitir('CinefusiónTV · Intro', cfg.intro.url, 'CinefusiónTV · Inicio');
-  cfg.ads.forEach((a,i)    => emitir(a.titulo || ('Publicidad ' + (i+1)), a.url, 'CinefusiónTV · Publicidad'));
-  cfg.movies.forEach((m,i) => emitir(m.titulo || ('Película ' + (i+1)),   m.url, 'CinefusiónTV · Películas'));
-
+  cfg.ads.forEach((a,i)=> emitir(a.titulo||('Publicidad '+(i+1)), a.url, 'CinefusiónTV · Publicidad'));
+  cfg.movies.forEach((m,i)=> emitir(m.titulo||('Película '+(i+1)), m.url, 'CinefusiónTV · Películas'));
   $('salidaM3U').textContent = L.join('\n');
   toast('✅ Playlist M3U generada');
   return L.join('\n');
@@ -681,347 +487,317 @@ function obtenerM3UActual(){
 }
 
 /* =========================================================
-   ★★★ WEB M3U CON REPRODUCTOR (página HTML autónoma) ★★★
+   ★ REPRODUCTOR HTML AUTÓNOMO (plantilla)
    ========================================================= */
-
-/* Plantilla del reproductor web autónomo */
 function plantillaPlayer(playlistJson, titulo){
   const T = escapeHtml(titulo);
   return `<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<html lang="es"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${T}</title>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"><\/script>
 <style>
-  html,body{margin:0;height:100%;background:#000;color:#fff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
-  #stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000}
-  video{width:100%;height:100%;object-fit:contain;background:#000}
-  #badge{position:absolute;top:16px;left:16px;background:rgba(229,9,20,.95);padding:6px 12px;border-radius:6px;
-    font-size:12px;font-weight:800;letter-spacing:1.4px;display:flex;align-items:center;gap:7px;z-index:5}
-  #badge .pt{width:8px;height:8px;background:#fff;border-radius:50%;animation:bk 1.1s infinite}
-  @keyframes bk{50%{opacity:.15}}
-  #bar{position:absolute;top:16px;right:16px;display:flex;gap:8px;z-index:5}
-  #bar button{background:rgba(0,0,0,.65);border:1px solid #333;color:#fff;padding:9px 14px;border-radius:8px;
-    font-size:13px;font-weight:600;cursor:pointer;backdrop-filter:blur(6px);transition:.2s}
-  #bar button:hover{background:#1a1a28;border-color:#4a4a6a}
-  #info{position:absolute;left:0;right:0;bottom:0;padding:70px 20px 22px;
-    background:linear-gradient(transparent,rgba(0,0,0,.92));
-    display:flex;justify-content:space-between;gap:14px;align-items:flex-end;flex-wrap:wrap;pointer-events:none;z-index:4}
-  #tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:1.2px;padding:4px 9px;
-    border-radius:5px;background:#3ea6ff;color:#04121f;margin-bottom:7px}
-  #tag.INICIO{background:#22c55e;color:#04160a}
-  #tag.PUBLICIDAD{background:#f59e0b;color:#1c1200}
-  #t{font-size:20px;font-weight:700;line-height:1.25}
-  #s{font-size:13px;color:#b9b9d6;white-space:nowrap}
-  #gate{position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;
-    gap:18px;background:rgba(0,0,0,.88);cursor:pointer;z-index:20}
-  #gate.on{display:flex}
-  #gate .play{width:96px;height:96px;border-radius:50%;background:#e50914;display:grid;place-items:center;
-    font-size:38px;color:#fff;box-shadow:0 14px 44px rgba(229,9,20,.55);transition:.2s}
-  #gate:hover .play{transform:scale(1.06)}
-  #gate p{font-size:15px;color:#ccc;margin:0;letter-spacing:.4px}
-  #logo{position:absolute;bottom:22px;right:22px;font-size:11px;color:#555;letter-spacing:1px;z-index:4}
-  #msg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:#888;
-    font-size:14px;display:none;z-index:3}
-  @media(max-width:600px){#t{font-size:16px}#s{display:none}#bar button{padding:8px 11px;font-size:12px}}
-</style>
-</head>
-<body>
+html,body{margin:0;height:100%;background:#000;color:#fff;font-family:system-ui,sans-serif;overflow:hidden}
+#stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+video{width:100%;height:100%;object-fit:contain;background:#000}
+#badge{position:absolute;top:16px;left:16px;background:rgba(229,9,20,.95);padding:6px 12px;border-radius:6px;
+ font-size:12px;font-weight:800;letter-spacing:1.4px;display:flex;gap:7px;align-items:center;z-index:5}
+#badge .pt{width:8px;height:8px;background:#fff;border-radius:50%;animation:bk 1.1s infinite}
+@keyframes bk{50%{opacity:.15}}
+#bar{position:absolute;top:16px;right:16px;display:flex;gap:8px;z-index:5}
+#bar button{background:rgba(0,0,0,.65);border:1px solid #333;color:#fff;padding:9px 14px;border-radius:8px;
+ font-size:13px;font-weight:600;cursor:pointer;backdrop-filter:blur(6px)}
+#bar button:hover{background:#1a1a28}
+#info{position:absolute;left:0;right:0;bottom:0;padding:70px 20px 22px;
+ background:linear-gradient(transparent,rgba(0,0,0,.92));display:flex;justify-content:space-between;
+ gap:14px;align-items:flex-end;flex-wrap:wrap;pointer-events:none;z-index:4}
+#tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:1.2px;padding:4px 9px;
+ border-radius:5px;background:#3ea6ff;color:#04121f;margin-bottom:7px}
+#tag.INICIO{background:#22c55e;color:#04160a}#tag.PUBLICIDAD{background:#f59e0b;color:#1c1200}
+#t{font-size:20px;font-weight:700}#s{font-size:13px;color:#b9b9d6;white-space:nowrap}
+#gate{position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;
+ gap:18px;background:rgba(0,0,0,.88);cursor:pointer;z-index:20}
+#gate.on{display:flex}
+#gate .play{width:96px;height:96px;border-radius:50%;background:#e50914;display:grid;place-items:center;
+ font-size:38px;color:#fff;box-shadow:0 14px 44px rgba(229,9,20,.55)}
+#gate p{font-size:15px;color:#ccc;margin:0}
+#msg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:#888;
+ font-size:14px;display:none;z-index:3}
+</style></head><body>
 <div id="stage">
-  <video id="v" playsinline controls preload="auto" autoplay></video>
-  <div id="badge"><span class="pt"></span> EN VIVO</div>
-  <div id="bar">
-    <button id="bSkip" title="Saltar al siguiente">⏭</button>
-    <button id="bFs" title="Pantalla completa">⛶</button>
-  </div>
-  <div id="msg">Cargando emisión…</div>
-  <div id="info">
-    <div>
-      <span id="tag">—</span>
-      <div id="t">Cargando…</div>
-    </div>
-    <div id="s"></div>
-  </div>
-  <div id="gate">
-    <div class="play">▶</div>
-    <p>Pulsa para iniciar la emisión</p>
-  </div>
-  <div id="logo">CINEFUSIÓN TV</div>
+<video id="v" playsinline controls preload="auto" autoplay></video>
+<div id="badge"><span class="pt"></span> EN VIVO</div>
+<div id="bar"><button id="bSkip">⏭</button><button id="bFs">⛶</button></div>
+<div id="msg">Cargando emisión…</div>
+<div id="info"><div><span id="tag">—</span><div id="t">Cargando…</div></div><div id="s"></div></div>
+<div id="gate"><div class="play">▶</div><p>Pulsa para iniciar la emisión</p></div>
 </div>
 <script>
 (function(){
-  var PLAYLIST = ${playlistJson};
-  var i = 0, hls = null, wd = null, cid = 0, started = false;
-  var v = document.getElementById('v');
-  var gate = document.getElementById('gate');
-  var elTag = document.getElementById('tag');
-  var elT = document.getElementById('t');
-  var elS = document.getElementById('s');
-  var elMsg = document.getElementById('msg');
-
-  function intentarPlay(){
-    var p = v.play();
-    if(p && p.catch){
-      p.catch(function(){
-        gate.classList.add('on');
-      });
-    }
-  }
-
-  function load(item){
-    var my = ++cid;
-    clearTimeout(wd);
-    if(hls){ try{hls.destroy();}catch(e){} hls = null; }
-    v.pause();
-    v.removeAttribute('src');
-    v.load();
-
-    elTag.textContent = item.tipo || 'CANAL';
-    elTag.className = item.tipo || '';
-    elT.textContent = item.titulo || 'Canal';
-    var nx = PLAYLIST[(i + 1) % PLAYLIST.length];
-    elS.textContent = nx ? 'Siguiente: ' + nx.titulo : '';
-    elMsg.style.display = 'block';
-    elMsg.textContent = 'Cargando: ' + (item.titulo || '');
-
-    var isHls = /\\.m3u8(\\?|#|$)/i.test(item.url);
-
-    if(isHls && window.Hls && Hls.isSupported()){
-      hls = new Hls({ lowLatencyMode:true, liveDurationInfinity:true, maxBufferLength:30 });
-      hls.loadSource(item.url);
-      hls.attachMedia(v);
-      hls.on(Hls.Events.MANIFEST_PARSED, function(){
-        if(my !== cid) return;
-        elMsg.style.display = 'none';
-        intentarPlay();
-      });
-      hls.on(Hls.Events.ERROR, function(e, d){
-        if(my !== cid || !d || !d.fatal) return;
-        if(d.type === Hls.ErrorTypes.NETWORK_ERROR) hls.startLoad();
-        else if(d.type === Hls.ErrorTypes.MEDIA_ERROR) hls.recoverMediaError();
-        else next();
-      });
-    } else {
-      v.src = item.url;
-      v.load();
-      intentarPlay();
-    }
-
-    wd = setTimeout(function(){
-      if(my === cid && v.readyState < 2) next();
-    }, 20000);
-  }
-
-  function next(){
-    i = (i + 1) % PLAYLIST.length;
-    load(PLAYLIST[i]);
-  }
-
-  v.addEventListener('ended', next);
-  v.addEventListener('playing', function(){
-    clearTimeout(wd);
-    elMsg.style.display = 'none';
-    gate.classList.remove('on');
-  });
-  v.addEventListener('error', function(){ if(!hls) next(); });
-  v.addEventListener('waiting', function(){
-    if(v.readyState < 2) elMsg.style.display = 'block';
-  });
-
-  gate.addEventListener('click', function(){
-    gate.classList.remove('on');
-    intentarPlay();
-  });
-
-  document.getElementById('bSkip').addEventListener('click', next);
-  document.getElementById('bFs').addEventListener('click', function(){
-    if(document.fullscreenElement) document.exitFullscreen();
-    else if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(function(){});
-  });
-
-  /* Arranque */
-  if(PLAYLIST && PLAYLIST.length){
-    setTimeout(function(){ load(PLAYLIST[0]); }, 150);
-  } else {
-    elT.textContent = 'Sin contenido';
-    elMsg.style.display = 'block';
-    elMsg.textContent = 'La lista está vacía';
-  }
+var PL=${playlistJson},i=0,hls=null,wd=null,cid=0;
+var v=document.getElementById('v'),gate=document.getElementById('gate'),
+    elTag=document.getElementById('tag'),elT=document.getElementById('t'),
+    elS=document.getElementById('s'),elMsg=document.getElementById('msg');
+function tryPlay(){var p=v.play();if(p&&p.catch)p.catch(function(){gate.classList.add('on');});}
+function load(it){
+  var my=++cid;clearTimeout(wd);
+  if(hls){try{hls.destroy();}catch(e){}hls=null;}
+  v.pause();v.removeAttribute('src');v.load();
+  elTag.textContent=it.tipo||'CANAL';elTag.className=it.tipo||'';
+  elT.textContent=it.titulo||'Canal';
+  var nx=PL[(i+1)%PL.length];elS.textContent=nx?'Siguiente: '+nx.titulo:'';
+  elMsg.style.display='block';elMsg.textContent='Cargando: '+(it.titulo||'');
+  var isHls=/\\.m3u8(\\?|#|$)/i.test(it.url);
+  if(isHls&&window.Hls&&Hls.isSupported()){
+    hls=new Hls({lowLatencyMode:true,liveDurationInfinity:true,maxBufferLength:30});
+    hls.loadSource(it.url);hls.attachMedia(v);
+    hls.on(Hls.Events.MANIFEST_PARSED,function(){if(my!==cid)return;elMsg.style.display='none';tryPlay();});
+    hls.on(Hls.Events.ERROR,function(e,d){
+      if(my!==cid||!d||!d.fatal)return;
+      if(d.type===Hls.ErrorTypes.NETWORK_ERROR)hls.startLoad();
+      else if(d.type===Hls.ErrorTypes.MEDIA_ERROR)hls.recoverMediaError();
+      else next();
+    });
+  } else { v.src=it.url; v.load(); tryPlay(); }
+  wd=setTimeout(function(){if(my===cid&&v.readyState<2)next();},20000);
+}
+function next(){i=(i+1)%PL.length;load(PL[i]);}
+v.addEventListener('ended',next);
+v.addEventListener('playing',function(){clearTimeout(wd);elMsg.style.display='none';gate.classList.remove('on');});
+v.addEventListener('error',function(){if(!hls)next();});
+v.addEventListener('waiting',function(){if(v.readyState<2)elMsg.style.display='block';});
+gate.addEventListener('click',function(){gate.classList.remove('on');tryPlay();});
+document.getElementById('bSkip').addEventListener('click',next);
+document.getElementById('bFs').addEventListener('click',function(){
+  if(document.fullscreenElement)document.exitFullscreen();
+  else if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(function(){});
+});
+if(PL&&PL.length)setTimeout(function(){load(PL[0]);},150);
+else{elT.textContent='Sin contenido';elMsg.style.display='block';elMsg.textContent='Lista vacía';}
 })();
-<\/script>
-</body>
-</html>`;
+<\/script></body></html>`;
 }
 
-/* Construye el HTML del reproductor con la cola actual */
 function construirHTMLReproductor(){
   leerConfig();
-  if(!cfg.intro && !cfg.ads.length && !cfg.movies.length){
-    toast('⚠ Añade al menos una URL antes de convertir');
-    return null;
-  }
+  if(!cfg.intro && !cfg.ads.length && !cfg.movies.length){ toast('⚠ Añade al menos una URL'); return null; }
   const c = construirCola(true);
   if(!c.length){ toast('⚠ La cola está vacía'); return null; }
-
-  /* Escapamos "</" para que no rompa el bloque <script> del HTML generado */
   const json = JSON.stringify(c).replace(/<\//g, '<\\/');
   return plantillaPlayer(json, 'CinefusiónTV · Canal en vivo');
 }
 
-/* Aviso en el panel Web */
-function mostrarAvisoWeb(tipo, html){
-  const a = $('avisoWeb');
-  a.style.display = 'block';
-  a.className = 'aviso' + (tipo ? ' ' + tipo : '');
-  a.innerHTML = html;
+/* =========================================================
+   ★ GENERADORES DE URL COPIABLE (sin blob)
+   ========================================================= */
+
+/* 1) URL M3U como Data URI — se pega en cualquier reproductor */
+function generarUrlM3U(){
+  const m3u = obtenerM3UActual();
+  if(!m3u){ toast('⚠ Genera primero el M3U'); return; }
+  const b64 = b64encode(m3u);
+  /* MIME estándar para listas de reproducción */
+  const url = 'data:application/vnd.apple.mpegurl;base64,' + b64;
+  $('urlWeb').value = url;
+  mostrarInfoUrl(url, 'M3U playlist');
+  const av = $('avisoWeb');
+  av.style.display = 'block';
+  av.className = 'aviso ok';
+  av.innerHTML = `✅ <b>URL M3U generada</b> (${url.length.toLocaleString('es-ES')} caracteres).<br>
+   Pégala en <b>VLC (Ctrl+N)</b>, <b>IPTV Smarters</b>, <b>TiviMate</b> o cualquier reproductor IPTV.<br>
+   También funciona abriéndola en el navegador, que ofrecerá descargar el .m3u.`;
+  toast('📼 URL M3U lista para copiar');
 }
 
-/* ---- Generar Web M3U (Blob URL, abre al instante) ---- */
-function generarWebM3U(){
+/* 2) URL del reproductor HTML como Data URI */
+function generarUrlPlayer(){
   const html = construirHTMLReproductor();
   if(!html) return;
-
-  if(urlWebBlob){ try{ URL.revokeObjectURL(urlWebBlob); }catch(e){} }
-  const blob = new Blob([html], { type:'text/html;charset=utf-8' });
-  urlWebBlob = URL.createObjectURL(blob);
-
-  $('urlWeb').value = urlWebBlob;
-
-  mostrarAvisoWeb('ok',
-    `✅ <b>Reproductor Web M3U generado</b> (${(html.length/1024).toFixed(1)} KB · ${cola.length} elementos).<br>
-     Se abrirá en una pestaña nueva. Esta URL funciona mientras esta pestaña esté abierta.
-     Para una URL permanente, pulsa <b>Descargar .html</b> y súbelo a GitHub Pages.`);
-
-  toast('🎬 Web M3U generada, abriendo reproductor…');
-  window.open(urlWebBlob, '_blank', 'noopener');
-}
-
-/* ---- Data URI (portable, se pega en el navegador) ---- */
-function generarWebData(){
-  const html = construirHTMLReproductor();
-  if(!html) return;
-
   const b64 = b64encode(html);
   const url = 'data:text/html;charset=utf-8;base64,' + b64;
   $('urlWeb').value = url;
-
-  const largo = url.length;
-  mostrarAvisoWeb(largo > 400000 ? 'err' : '',
-    `ℹ <b>Data URI del reproductor</b> (${largo.toLocaleString('es-ES')} caracteres).<br>
-     Pégala en la barra del navegador y pulsa Enter → reproduce el canal al instante.
-     ${largo > 400000 ? '<br>⚠ Es muy larga; usa mejor el <b>.html descargable</b>.' : ''}`);
-
-  toast('🌐 Data URI del reproductor generada');
+  mostrarInfoUrl(url, 'Reproductor HTML');
+  const av = $('avisoWeb');
+  av.style.display = 'block';
+  av.className = 'aviso ok';
+  av.innerHTML = `✅ <b>URL del reproductor generada</b> (${url.length.toLocaleString('es-ES')} caracteres).<br>
+   Pégala en la barra del navegador y pulsa Enter → verás el reproductor en marcha con toda la secuencia.`;
+  toast('▶ URL del reproductor lista');
 }
 
-/* ---- Descargar HTML (para GitHub Pages) ---- */
-function descargarWebHTML(){
+/* 3) Código Embed para cualquier página web */
+function generarEmbed(){
   const html = construirHTMLReproductor();
   if(!html) return;
+  /* srcdoc: escapamos comillas dobles y ampersands para meterlo en un atributo HTML */
+  const escaped = html.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+  const code = `<iframe srcdoc="${escaped}" width="100%" height="500" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="border-radius:12px;background:#000"></iframe>`;
+  $('urlWeb').value = code;
+  mostrarInfoUrl(code, 'Código Embed (iframe)');
+  const av = $('avisoWeb');
+  av.style.display = 'block';
+  av.className = 'aviso ok';
+  av.innerHTML = `✅ <b>Código Embed generado</b>.<br>
+   Pégalo en WordPress, Blogger, Wix o cualquier HTML y el reproductor aparecerá incrustado.`;
+  toast('📎 Código embed listo');
+}
 
-  const blob = new Blob([html], { type:'text/html;charset=utf-8' });
+function mostrarInfoUrl(url, tipo){
+  const info = $('urlWebInfo');
+  const len = url.length;
+  info.textContent = `${tipo} · ${len.toLocaleString('es-ES')} caracteres · ${(len/1024).toFixed(1)} KB`;
+}
+
+/* 4) Copiar TODO (método robusto con textarea para cadenas largas) */
+function copiarTodo(){
+  const v = $('urlWeb').value.trim();
+  if(!v){ toast('⚠ Genera primero una URL'); return; }
+
+  /* Para cadenas cortas: clipboard API */
+  if(v.length < 50000 && navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(v)
+      .then(()=>toast('📋 URL completa copiada'))
+      .catch(()=>copiarConTextarea(v));
+    return;
+  }
+  /* Para cadenas largas: textarea + execCommand */
+  copiarConTextarea(v);
+}
+function copiarConTextarea(v){
+  const ta = document.createElement('textarea');
+  ta.value = v;
+  ta.style.position = 'fixed';
+  ta.style.top = '0';
+  ta.style.left = '0';
+  ta.style.width = '2em';
+  ta.style.height = '2em';
+  ta.style.padding = '0';
+  ta.style.border = 'none';
+  ta.style.outline = 'none';
+  ta.style.boxShadow = 'none';
+  ta.style.background = 'transparent';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  ta.setSelectionRange(0, v.length);
+  let ok = false;
+  try{ ok = document.execCommand('copy'); }catch(e){}
+  document.body.removeChild(ta);
+  if(ok) toast('📋 URL completa copiada (' + (v.length/1024).toFixed(1) + ' KB)');
+  else   toast('⚠ Copia manualmente: selecciona el cuadro y pulsa Ctrl+C');
+}
+
+/* 5) Probar la URL generada */
+function probarWeb(){
+  const v = $('urlWeb').value.trim();
+  if(!v){ toast('⚠ Genera primero una URL'); return; }
+
+  if(v.startsWith('data:application/vnd.apple.mpegurl')){
+    /* Es un M3U → extraer texto y cargar en el reproductor de la página */
+    try{
+      const i = v.indexOf(',');
+      const payload = v.substring(i+1);
+      const texto = b64decode(payload);
+      cargarDesdeM3U(texto);
+      toast('▶ Reproduciendo desde la URL M3U');
+    }catch(e){ toast('⚠ URL M3U inválida'); }
+    return;
+  }
+  if(v.startsWith('data:text/html')){
+    /* Es HTML → abrir en pestaña nueva (data URIs de HTML no se pueden iframear por seguridad) */
+    const w = window.open('', '_blank');
+    if(w){
+      try{ w.document.write(b64decode(v.substring(v.indexOf(',')+1))); w.document.close(); }
+      catch(e){ toast('⚠ No se pudo abrir el reproductor'); }
+    } else toast('⚠ Permite las ventanas emergentes');
+    return;
+  }
+  if(v.startsWith('<iframe')){
+    /* Es código embed → abrirlo en un contenedor temporal */
+    const w = window.open('', '_blank');
+    if(w){ w.document.write('<!DOCTYPE html><html><body style="margin:0;background:#000">'+v+'</body></html>'); w.document.close(); }
+    else toast('⚠ Permite las ventanas emergentes');
+    return;
+  }
+  toast('⚠ Tipo de URL no reconocido');
+}
+
+/* 6) Descargar .html (para GitHub Pages → URL permanente) */
+function descargarHtml(){
+  const html = construirHTMLReproductor();
+  if(!html) return;
+  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
   const href = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = href;
-  a.download = 'cinefusiontv-player.html';
+  a.href = href; a.download = 'cinefusiontv-player.html';
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(()=>URL.revokeObjectURL(href), 4000);
-
-  mostrarAvisoWeb('ok',
-    `✅ Archivo <b>cinefusiontv-player.html</b> descargado.<br>
-     Súbelo a tu repositorio de GitHub Pages (Settings → Pages → rama main).
-     Tendrás una URL fija tipo <code>https://usuario.github.io/repo/cinefusiontv-player.html</code> que reproduce el canal sin problemas.`);
-
-  toast('⬇ Reproductor .html descargado');
+  const av = $('avisoWeb');
+  av.style.display = 'block'; av.className = 'aviso ok';
+  av.innerHTML = `✅ <b>cinefusiontv-player.html</b> descargado.<br>
+   Súbelo a tu repo de GitHub Pages → tendrás una URL fija tipo
+   <code>https://usuario.github.io/repo/cinefusiontv-player.html</code> que reproduce el canal sin problemas.`;
+  toast('⬇ .html descargado');
 }
 
-function copiarUrlWeb(){
-  const v = $('urlWeb').value.trim();
-  if(!v){ toast('⚠ Genera primero el reproductor'); return; }
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(v)
-      .then(()=>toast('📋 URL del reproductor copiada'))
-      .catch(()=>fallbackCopiar(v));
-  } else fallbackCopiar(v);
-}
-function abrirUrlWeb(){
-  const v = $('urlWeb').value.trim();
-  if(!v){ toast('⚠ Genera primero el reproductor'); return; }
-  const w = window.open(v, '_blank', 'noopener');
-  if(!w) toast('⚠ Permite las ventanas emergentes');
+/* 7) Descargar .m3u (para subir a GitHub y tener URL fija) */
+function descargarM3UFile(){
+  const txt = obtenerM3UActual();
+  const blob = new Blob([txt], {type:'application/vnd.apple.mpegurl;charset=utf-8'});
+  const href = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = href; a.download = 'cinefusiontv.m3u';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(href), 4000);
+  toast('⬇ cinefusiontv.m3u descargado');
 }
 
 /* =========================================================
-   ENLACE COMPARTIBLE POR HASH
+   ENLACE COMPARTIBLE (hash)
    ========================================================= */
 function generarEnlaceCompartible(){
   leerConfig();
-  if(!cfg.intro && !cfg.ads.length && !cfg.movies.length){
-    toast('⚠ Añade al menos una URL');
-    return;
-  }
-  const json = serializarConfig();
-  const b64  = toUrlSafe(b64encode(json));
-  const base = location.origin + location.pathname;
-  const url  = base + '#c=' + b64 + '&auto=1';
+  if(!cfg.intro && !cfg.ads.length && !cfg.movies.length){ toast('⚠ Añade al menos una URL'); return; }
+  const b64 = toUrlSafe(b64encode(serializarConfig()));
+  const url = location.origin + location.pathname + '#c=' + b64 + '&auto=1';
   $('urlUnica').value = url;
-
   const largo = url.length;
   const av = $('avisoUrl');
   av.style.display = 'block';
-  if(largo > 3500){
-    av.className = 'aviso err';
-    av.innerHTML = `⚠ Enlace muy largo (${largo} caracteres). Usa mejor el <b>Web M3U descargable</b>.`;
-  } else if(largo > 1800){
-    av.className = 'aviso';
-    av.innerHTML = `ℹ Enlace de ${largo} caracteres. Funciona en la mayoría de casos.`;
-  } else {
-    av.className = 'aviso ok';
-    av.innerHTML = `✅ Enlace listo (${largo} caracteres).`;
-  }
+  av.className = largo > 3500 ? 'aviso err' : (largo > 1800 ? 'aviso' : 'aviso ok');
+  av.innerHTML = `ℹ Enlace de ${largo} caracteres. ` +
+    (largo > 3500 ? 'Usa mejor la URL M3U o el reproductor descargable.' : 'Listo para compartir.');
   toast('🔗 Enlace compartible generado');
-  return url;
 }
-
-function generarUrlData(){
-  const m3u = obtenerM3UActual();
-  const b64 = b64encode(m3u);
-  urlDataM3U = 'data:application/vnd.apple.mpegurl;base64,' + b64;
-  $('urlUnica').value = urlDataM3U;
-  const av = $('avisoUrl');
-  av.style.display = 'block';
-  av.className = 'aviso';
-  av.innerHTML = `ℹ Data URI M3U de ${urlDataM3U.length.toLocaleString('es-ES')} caracteres. Úsalo en <b>VLC / IPTV Smarters / TiviMate</b>.`;
-  toast('🌐 Data URI M3U generada');
-}
-
 function leerHash(){
-  const h = location.hash.replace(/^#/,'');
-  if(!h) return false;
+  const h = location.hash.replace(/^#/,''); if(!h) return false;
   const params = new URLSearchParams(h);
-  const c = params.get('c');
-  if(!c) return false;
+  const c = params.get('c'); if(!c) return false;
   try{
     const json = b64decode(fromUrlSafe(c));
     if(!deserializarConfig(json)) return false;
     return { auto: params.get('auto') === '1' };
   }catch(e){ return false; }
 }
+function copiarUrlUnica(){
+  const v = $('urlUnica').value.trim();
+  if(!v){ toast('⚠ Genera primero un enlace'); return; }
+  copiarConTextarea(v);
+}
+function probarUrlUnica(){
+  const v = $('urlUnica').value.trim();
+  if(!v){ toast('⚠ Genera primero un enlace'); return; }
+  const hash = v.includes('#') ? v.substring(v.indexOf('#')) : v;
+  location.hash = hash.substring(1);
+  location.reload();
+}
 
 /* =========================================================
    COPIAR / DESCARGAR / IMPORTAR M3U
    ========================================================= */
-async function copiarM3U(){
+function copiarM3U(){
   const txt = $('salidaM3U').textContent;
-  try{ await navigator.clipboard.writeText(txt); toast('📋 Copiado al portapapeles'); }
-  catch(e){
-    const ta = document.createElement('textarea');
-    ta.value = txt; document.body.appendChild(ta); ta.select();
-    document.execCommand('copy'); ta.remove();
-    toast('📋 Copiado');
-  }
+  copiarConTextarea(txt);
 }
 function descargarM3U(){
   const txt = $('salidaM3U').textContent;
@@ -1040,8 +816,7 @@ function importarM3U(){
   const intro = [], ads = [], movies = [];
   let titulo = '', grupo = '';
   lineas.forEach(linea => {
-    const l = linea.trim();
-    if(!l) return;
+    const l = linea.trim(); if(!l) return;
     if(l.startsWith('#EXTINF')){
       const g = l.match(/group-title="([^"]*)"/i);
       grupo = g ? g[1].toLowerCase() : '';
@@ -1049,78 +824,33 @@ function importarM3U(){
       titulo = coma > -1 ? l.substring(coma+1).trim() : 'Canal';
     } else if(!l.startsWith('#')){
       const item = titulo + ' | ' + l;
-      if(/inicio|intro/.test(grupo))                 intro.push(item);
+      if(/inicio|intro/.test(grupo)) intro.push(item);
       else if(/public|comercial|anuncio/.test(grupo)) ads.push(item);
-      else                                            movies.push(item);
+      else movies.push(item);
       titulo = ''; grupo = '';
     }
   });
-  if(intro.length)  $('inIntro').value  = intro[0];
-  if(ads.length)    $('inAds').value    = ads.join('\n');
+  if(intro.length) $('inIntro').value = intro[0];
+  if(ads.length) $('inAds').value = ads.join('\n');
   if(movies.length) $('inMovies').value = movies.join('\n');
   toast(`📥 Importado: ${intro.length} intro · ${ads.length} ads · ${movies.length} películas`);
 }
 
 /* =========================================================
-   COPIAR / PROBAR / ABRIR URL ÚNICA (hash)
+   CARGAR M3U EN EL MOTOR
    ========================================================= */
-function copiarUrlUnica(){
-  const v = $('urlUnica').value.trim();
-  if(!v){ toast('⚠ Genera primero un enlace'); return; }
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(v).then(()=>toast('📋 URL copiada')).catch(()=>fallbackCopiar(v));
-  } else fallbackCopiar(v);
-}
-function fallbackCopiar(v){
-  const ta = document.createElement('textarea');
-  ta.value = v; document.body.appendChild(ta); ta.select();
-  try{ document.execCommand('copy'); toast('📋 URL copiada'); }
-  catch(e){ toast('⚠ Copia manualmente'); }
-  ta.remove();
-}
-function probarUrlUnica(){
-  const v = $('urlUnica').value.trim();
-  if(!v){ toast('⚠ Genera primero un enlace'); return; }
-  if(v.startsWith(location.origin + location.pathname) || v.startsWith('#')){
-    const hash = v.includes('#') ? v.substring(v.indexOf('#')) : v;
-    location.hash = hash.substring(1);
-    location.reload();
-    return;
-  }
-  if(v.startsWith('data:')){
-    try{
-      const i2 = v.indexOf(',');
-      const meta = v.substring(0, i2);
-      const payload = v.substring(i2+1);
-      const texto = /;base64/i.test(meta) ? b64decode(payload) : decodeURIComponent(payload);
-      cargarDesdeM3U(texto);
-    }catch(e){ toast('⚠ Data URI inválida'); }
-    return;
-  }
-  fetch(v).then(r=>r.text()).then(txt=>cargarDesdeM3U(txt)).catch(()=> toast('⚠ No se pudo leer (CORS)'));
-}
-function abrirUrlUnica(){
-  const v = $('urlUnica').value.trim();
-  if(!v){ toast('⚠ Genera primero un enlace'); return; }
-  const w = window.open(v, '_blank', 'noopener');
-  if(!w) toast('⚠ Permite las ventanas emergentes');
-}
 function cargarDesdeM3U(texto){
   const items = parsearM3U(texto);
   if(!items.length){ toast('⚠ M3U vacío'); return; }
   cola = items; idx = 0; activo = true;
-  setEstado(true, 'EN EMISIÓN');
-  renderCola();
-  playActual();
+  setEstado(true, 'EN EMISIÓN'); renderCola(); playActual();
   toast('▶ Reproduciendo (' + items.length + ' items)');
 }
 function parsearM3U(texto){
-  const lineas = texto.split('\n');
-  const items = [];
+  const lineas = texto.split('\n'); const items = [];
   let titulo = '', grupo = '';
   lineas.forEach(l => {
-    l = l.trim();
-    if(!l) return;
+    l = l.trim(); if(!l) return;
     if(l.startsWith('#EXTINF')){
       const g = l.match(/group-title="([^"]*)"/i);
       grupo = g ? g[1] : '';
@@ -1128,9 +858,9 @@ function parsearM3U(texto){
       titulo = coma > -1 ? l.substring(coma+1).trim() : 'Canal';
     } else if(!l.startsWith('#')){
       let tipo = 'PELÍCULA';
-      if(/inicio|intro/i.test(grupo))                  tipo = 'INICIO';
+      if(/inicio|intro/i.test(grupo)) tipo = 'INICIO';
       else if(/public|comercial|anuncio/i.test(grupo)) tipo = 'PUBLICIDAD';
-      items.push({ tipo, titulo: titulo || nombreDesdeUrl(l), url: l });
+      items.push({tipo, titulo: titulo || nombreDesdeUrl(l), url: l});
       titulo = ''; grupo = '';
     }
   });
@@ -1141,91 +871,78 @@ function parsearM3U(texto){
    DEMO
    ========================================================= */
 function cargarDemo(){
-  $('inIntro').value =
-    'Inicio CinefusiónTV | https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4';
+  $('inIntro').value = 'Inicio CinefusiónTV | https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4';
   $('inAds').value =
-    'Comercial CinefusiónTV | https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4\n' +
-    'Promo CinefusiónTV | https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4\n' +
-    'Spot CinefusiónTV | https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4';
+    'Comercial 1 | https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4\n' +
+    'Promo 2 | https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4\n' +
+    'Spot 3 | https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4';
   $('inMovies').value =
     'Big Buck Bunny | https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4\n' +
     'Elephants Dream | https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4\n' +
     'Tears of Steel (HLS) | https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8';
-  guardarLocal();
-  validarUrlsSeguras();
+  guardarLocal(); validarUrlsSeguras();
   toast('⚡ Contenido demo cargado');
 }
 
 /* =========================================================
-   EVENTOS UI
+   EVENTOS
    ========================================================= */
-$('btnPlay').addEventListener('click', () => iniciar(false));
+$('btnPlay').addEventListener('click', ()=> iniciar(false));
 $('btnStop').addEventListener('click', detener);
-$('btnSkip').addEventListener('click', () => { if(activo) siguiente(); else toast('Inicia la transmisión primero'); });
+$('btnSkip').addEventListener('click', ()=>{ if(activo) siguiente(); else toast('Inicia primero'); });
 $('btnDemo').addEventListener('click', cargarDemo);
-$('btnGenerar').addEventListener('click', () => { generarM3U(); validarUrlsSeguras(); });
+$('btnGenerar').addEventListener('click', ()=>{ generarM3U(); validarUrlsSeguras(); });
 $('btnCopiar').addEventListener('click', copiarM3U);
 $('btnDescargar').addEventListener('click', descargarM3U);
 $('btnImportar').addEventListener('click', importarM3U);
-$('btnGuardar').addEventListener('click', () => { guardarLocal(); toast('💾 Configuración guardada'); });
+$('btnGuardar').addEventListener('click', ()=>{ guardarLocal(); toast('💾 Guardado'); });
 
-/* Web M3U */
-$('btnWebGenerar').addEventListener('click', generarWebM3U);
-$('btnWebData').addEventListener('click', generarWebData);
-$('btnWebCopiar').addEventListener('click', copiarUrlWeb);
-$('btnWebAbrir').addEventListener('click', abrirUrlWeb);
-$('btnWebDescargar').addEventListener('click', descargarWebHTML);
+/* URL M3U copiable */
+$('btnUrlM3U').addEventListener('click', generarUrlM3U);
+$('btnUrlPlayer').addEventListener('click', generarUrlPlayer);
+$('btnCopiarTodo').addEventListener('click', copiarTodo);
+$('btnProbarWeb').addEventListener('click', probarWeb);
+$('btnEmbedCode').addEventListener('click', generarEmbed);
+$('btnDescargarHtml').addEventListener('click', descargarHtml);
+$('btnDescargarM3UFile').addEventListener('click', descargarM3UFile);
 
-/* URL compartible */
+/* Enlace hash */
 $('btnUrlShare').addEventListener('click', generarEnlaceCompartible);
-$('btnUrlData').addEventListener('click', generarUrlData);
 $('btnCopiarUrl').addEventListener('click', copiarUrlUnica);
 $('btnProbarUrl').addEventListener('click', probarUrlUnica);
-$('btnAbrirUrl').addEventListener('click', abrirUrlUnica);
+
+/* Seleccionar todo al hacer click en el textarea de URL */
+$('urlWeb').addEventListener('click', function(){
+  if(this.value && this.value.length > 100) this.select();
+});
 
 ['inIntro','inAds','inMovies'].forEach(id => {
-  $(id).addEventListener('change', () => { guardarLocal(); validarUrlsSeguras(); });
-  $(id).addEventListener('blur',  () => validarUrlsSeguras());
+  $(id).addEventListener('change', ()=>{ guardarLocal(); validarUrlsSeguras(); });
+  $(id).addEventListener('blur', ()=> validarUrlsSeguras());
 });
-$('chkLoop').addEventListener('change', () => { cfg.loop = $('chkLoop').checked; });
+$('chkLoop').addEventListener('change', ()=>{ cfg.loop = $('chkLoop').checked; });
 
 /* =========================================================
    ARRANQUE
    ========================================================= */
 (function init(){
   const hash = leerHash();
-
   if(hash){
     document.body.classList.add('modoPlayer');
     if($('chkLoop')) $('chkLoop').checked = true;
     cfg.loop = true;
-    leerConfig();
-    renderCola();
-    console.log('%c▶ Modo reproductor · config desde URL','color:#7b2ff7;font-weight:bold');
-    if(hash.auto) setTimeout(() => iniciar(true), 250);
+    leerConfig(); renderCola();
+    if(hash.auto) setTimeout(()=> iniciar(true), 250);
     else toast('Pulsa ▶ Iniciar transmisión');
     return;
   }
-
   if(!cargarLocal()) cargarDemo();
-  leerConfig();
-  validarUrlsSeguras();
-  renderCola();
-  console.log('%c🎬 CinefusiónTV · Web M3U con reproductor listo','color:#e50914;font-weight:bold;font-size:14px');
+  leerConfig(); validarUrlsSeguras(); renderCola();
+  console.log('%c🎬 CinefusiónTV · URL M3U copiable lista','color:#e50914;font-weight:bold;font-size:14px');
 })();
-
-window.addEventListener('hashchange', () => {
+window.addEventListener('hashchange', ()=>{
   const h = leerHash();
-  if(h){
-    document.body.classList.add('modoPlayer');
-    leerConfig();
-    renderCola();
-    if(h.auto) iniciar(true);
-  }
-});
-
-window.addEventListener('beforeunload', () => {
-  if(urlWebBlob){ try{ URL.revokeObjectURL(urlWebBlob); }catch(e){} }
+  if(h){ document.body.classList.add('modoPlayer'); leerConfig(); renderCola(); if(h.auto) iniciar(true); }
 });
 </script>
 </body>
