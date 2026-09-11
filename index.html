@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CinefusiónTV · M3U + GitHub (URL permanente)</title>
+<title>CinefusiónTV · M3U + GitHub + Diagnóstico</title>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
 <style>
   :root{--bg:#07070c;--panel:#12121c;--panel2:#1a1a28;--line:#27273c;--txt:#e9e9f2;--muted:#8b8ba7;--red:#e50914;--blue:#3ea6ff;--green:#22c55e;--amber:#f59e0b;--purple:#7b2ff7}
@@ -28,14 +28,17 @@
   .live-badge.on{opacity:1}
   .live-badge .pt{width:8px;height:8px;background:#fff;border-radius:50%;animation:blink 1.1s infinite}
   @keyframes blink{50%{opacity:.15}}
-  .clock{position:absolute;top:14px;right:14px;background:rgba(0,0,0,.6);border:1px solid var(--line);color:#fff;font-size:12.5px;font-weight:700;letter-spacing:1px;padding:6px 12px;border-radius:6px;font-variant-numeric:tabular-nums;pointer-events:none}
+  .clock{position:absolute;top:14px;right:14px;background:rgba(0,0,0,.6);border:1px solid var(--line);color:#fff;font-size:12.5px;font-weight:700;letter-spacing:1px;padding:6px 12px;border-radius:6px;font-variant-numeric:tabular-nums;pointer-events:none;z-index:3}
   .overlay-info{position:absolute;left:0;right:0;bottom:0;padding:40px 16px 14px;background:linear-gradient(transparent,rgba(0,0,0,.9));display:flex;align-items:flex-end;justify-content:space-between;gap:12px;pointer-events:none;flex-wrap:wrap}
   .now{display:flex;align-items:center;gap:10px;min-width:0}
   .tag{font-size:10.5px;font-weight:800;letter-spacing:1.2px;padding:4px 9px;border-radius:5px;background:var(--blue);color:#04121f;white-space:nowrap}
   .tag.inicio{background:var(--green);color:#04160a}
   .tag.publicidad{background:var(--amber);color:#1c1200}
+  .tag.error{background:var(--red);color:#fff}
   .now .name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .next{font-size:12px;color:#c7c7dd;white-space:nowrap}
+  .diag{position:absolute;top:60px;left:14px;right:14px;background:rgba(229,9,20,.95);color:#fff;font-size:12.5px;font-weight:600;padding:10px 14px;border-radius:8px;z-index:10;display:none;line-height:1.5;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+  .diag.on{display:block}
   .controles{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px}
   .btn{border:1px solid var(--line);background:var(--panel2);color:var(--txt);padding:11px 16px;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;transition:.18s;display:inline-flex;align-items:center;gap:7px}
   .btn:hover{background:#23233a;border-color:#3a3a58;transform:translateY(-1px)}
@@ -54,9 +57,11 @@
   .cola{list-style:none;margin:0;padding:0;max-height:240px;overflow:auto}
   .cola li{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;font-size:13px;border:1px solid transparent}
   .cola li.activo{background:rgba(62,166,255,.12);border-color:rgba(62,166,255,.4)}
+  .cola li.fallo{background:rgba(229,9,20,.1);border-color:rgba(229,9,20,.35)}
   .cola li .num{width:22px;color:var(--muted);font-size:11px}
   .cola li .tipo{font-size:9.5px;font-weight:800;letter-spacing:.8px;padding:3px 7px;border-radius:4px;background:#2a2a42;color:#b9b9d6;white-space:nowrap}
   .cola li.activo .tipo{background:var(--blue);color:#04121f}
+  .cola li.fallo .tipo{background:var(--red);color:#fff}
   .cola li .nom{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#d6d6e8}
   .cola .vacio{color:var(--muted);font-style:italic;justify-content:center}
   label.f{display:block;font-size:11.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
@@ -74,8 +79,8 @@
   .urlbox{background:#08131f;border:1px solid #1e3a5f;border-radius:10px;padding:11px 12px;font-size:11.5px;color:#7dd3fc;word-break:break-all;font-family:ui-monospace,Menlo,Consolas,monospace;min-height:44px;line-height:1.5}
   .urlbox.vacio{color:#4a4a6a;font-style:italic}
   .badge-web{display:inline-block;font-size:10px;font-weight:800;letter-spacing:1px;padding:3px 8px;border-radius:4px;margin-left:8px;background:rgba(62,166,255,.15);color:#7dd3fc;border:1px solid rgba(62,166,255,.45)}
-  .badge-gh{display:inline-block;font-size:10px;font-weight:800;letter-spacing:1px;padding:3px 8px;border-radius:4px;margin-left:8px;background:rgba(123,47,247,.15);color:#c4a6ff;border:1px solid rgba(123,47,247,.4)}
   .badge-git{display:inline-block;font-size:10px;font-weight:800;letter-spacing:1px;padding:3px 8px;border-radius:4px;margin-left:8px;background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.25)}
+  .badge-fix{display:inline-block;font-size:10px;font-weight:800;letter-spacing:1px;padding:3px 8px;border-radius:4px;margin-left:8px;background:rgba(34,197,94,.2);color:#4ade80;border:1px solid rgba(34,197,94,.5)}
   .aviso{margin-top:10px;padding:10px 12px;border-radius:9px;font-size:12px;line-height:1.55;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.35);color:#fcd34d}
   .aviso.err{background:rgba(229,9,20,.08);border-color:rgba(229,9,20,.4);color:#ffb4b4}
   .aviso.ok{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.4);color:#86efac}
@@ -103,7 +108,7 @@
     <div class="logo">C</div>
     <div>
       <h1>Cinefusión<span>TV</span></h1>
-      <p>M3U · GitHub · URL Permanente</p>
+      <p>M3U · GitHub · Corrector Archive.org</p>
     </div>
   </div>
   <div class="status" id="statusPill"><span class="dot"></span> <span id="statusTxt">DETENIDO</span></div>
@@ -118,6 +123,7 @@
       <video id="player" playsinline controls preload="auto"></video>
       <div class="live-badge" id="liveBadge"><span class="pt"></span> EN VIVO</div>
       <div class="clock" id="reloj">--:--:--</div>
+      <div class="diag" id="diag"></div>
       <div class="overlay-info">
         <div class="now">
           <span class="tag" id="tipoActual">—</span>
@@ -140,15 +146,28 @@
   </section>
 
   <aside>
-    <!-- URLs del canal -->
+    <div class="panel" style="border-color:rgba(34,197,94,.4);background:linear-gradient(180deg,rgba(34,197,94,.06),transparent 60%)">
+      <h3>🛠 Corrector de URLs <span class="badge-fix">AUTO</span></h3>
+      <p class="hint" style="margin-top:0">
+        Convierte automáticamente <code>archive.org/serve/ID/archivo</code> a
+        <code>archive.org/download/ID/archivo</code>, que sí funciona en el navegador.
+        También arregla <code>/details/</code> y <code>/embed/</code>.
+      </p>
+      <div class="row" style="margin-top:8px">
+        <button class="btn green" id="btnFix">🛠 Corregir URLs de Archive.org</button>
+        <button class="btn ghost" id="btnCheck">🔍 Verificar URLs (HTTP)</button>
+      </div>
+      <div class="aviso" id="avisoFix" style="display:none"></div>
+    </div>
+
     <div class="panel">
       <h3>1 · URLs del canal</h3>
       <label class="f">🎬 Inicio / Intro (1 URL)</label>
-      <textarea id="inIntro" placeholder="https://mi-servidor.com/intro.mp4"></textarea>
+      <textarea id="inIntro" placeholder="https://archive.org/download/TU-ID/intro.mp4"></textarea>
       <label class="f">📢 Publicidad (una por línea)</label>
-      <textarea id="inAds" placeholder="Comercial 1 | https://servidor.com/ad1.mp4&#10;https://servidor.com/ad2.mp4"></textarea>
+      <textarea id="inAds" placeholder="Comercial 1 | https://archive.org/download/TU-ID/ad1.mp4&#10;https://servidor.com/ad2.mp4"></textarea>
       <label class="f">🍿 Películas (una por línea)</label>
-      <textarea id="inMovies" placeholder="Big Buck Bunny | https://servidor.com/peli1.mp4&#10;https://servidor.com/peli2.m3u8"></textarea>
+      <textarea id="inMovies" placeholder="Big Buck Bunny | https://archive.org/download/TU-ID/peli1.mp4&#10;https://servidor.com/peli2.m3u8"></textarea>
       <p class="hint">Formato: <code>URL</code> o <code>Título | URL</code>. Soporta MP4/WebM y HLS.</p>
       <div id="avisoHttps"></div>
       <div class="row">
@@ -157,12 +176,10 @@
       </div>
     </div>
 
-    <!-- GITHUB -->
     <div class="panel" style="border-color:rgba(255,255,255,.18);background:linear-gradient(180deg,rgba(255,255,255,.03),transparent 60%)">
       <h3>🐙 GitHub · Guardar y publicar <span class="badge-git">API</span></h3>
       <p class="hint" style="margin-top:0">
-        Guarda tu <b>.m3u</b> y tu <b>reproductor.html</b> directamente en tu repositorio.
-        Obtendrás una <b>URL permanente</b> de GitHub Pages para pegar en cualquier reproductor.
+        Guarda tu <b>.m3u</b> y tu <b>reproductor.html</b> en tu repositorio para tener una URL permanente.
       </p>
 
       <label class="f">🔑 Personal Access Token <a href="https://github.com/settings/tokens/new?scopes=repo&description=CinefusionTV" target="_blank" style="float:right;font-size:11px">crear token →</a></label>
@@ -172,7 +189,7 @@
       <input type="text" id="ghOwner" placeholder="hansenn1090">
 
       <label class="f">📦 Repositorio</label>
-      <input type="text" id="ghRepo" placeholder="cinefusiontv">
+      <input type="text" id="ghRepo" placeholder="GeneradorCFTV">
 
       <div class="grid2" style="margin-top:14px">
         <div>
@@ -181,7 +198,7 @@
         </div>
         <div>
           <label class="f" style="margin-top:0">📁 Carpeta (opcional)</label>
-          <input type="text" id="ghFolder" placeholder="" placeholder="public">
+          <input type="text" id="ghFolder" placeholder="">
         </div>
       </div>
 
@@ -191,18 +208,17 @@
       </div>
 
       <div class="row" style="margin-top:14px">
-        <button class="btn primary" id="btnGhM3U">📼 Generar M3U → Guardar en GitHub</button>
+        <button class="btn primary" id="btnGhM3U">📼 Generar M3U → GitHub</button>
       </div>
       <div class="row" style="margin-top:9px">
-        <button class="btn purple" id="btnGhPlayer">🎬 Generar Reproductor → Guardar en GitHub</button>
+        <button class="btn purple" id="btnGhPlayer">🎬 Generar Reproductor → GitHub</button>
       </div>
       <div class="row" style="margin-top:9px">
-        <button class="btn ghost" id="btnGhBoth">⚡ Guardar ambos (M3U + Player)</button>
+        <button class="btn ghost" id="btnGhBoth">⚡ Guardar ambos</button>
       </div>
 
       <div class="aviso info" id="avisoGh" style="display:none"></div>
 
-      <!-- Resultados -->
       <label class="f" style="margin-top:16px">🌐 URL permanente del M3U</label>
       <div class="urlbox vacio" id="resM3UUrl">Sin URL todavía…</div>
       <div class="row" style="margin-top:9px">
@@ -218,19 +234,15 @@
       </div>
 
       <p class="hint" style="margin-top:12px">
-        🔒 El token se guarda solo en tu navegador (localStorage) y nunca se envía a otro sitio que no sea <code>api.github.com</code>.<br>
-        ⚠ Necesita scope <code>repo</code> (o Contents: Read & Write en fine-grained).<br>
-        ⚙ Activa <b>GitHub Pages</b> en Settings → Pages → Branch: <code id="hintBranch">main</code> /(root).
+        🔒 El token se guarda solo en tu navegador. Se envía únicamente a <code>api.github.com</code>.<br>
+        ⚠ Scope necesario: <code>repo</code> (o Contents: Read & Write en fine-grained).<br>
+        ⚙ GitHub Pages: Settings → Pages → Branch: <code id="hintBranch">main</code> /(root).
       </p>
     </div>
 
-    <!-- URL copiable (Data URI) -->
     <div class="panel" style="border-color:rgba(62,166,255,.5);background:linear-gradient(180deg,rgba(62,166,255,.08),transparent 60%)">
-      <h3>🔗 URL copiable (sin GitHub) <span class="badge-web">DATA URI</span></h3>
-      <p class="hint" style="margin-top:0">
-        Si no quieres usar GitHub, genera una URL <b>data:</b> completa.
-        Pégala en VLC, IPTV Smarters, TiviMate o el navegador.
-      </p>
+      <h3>🔗 URL copiable (Data URI) <span class="badge-web">SIN GITHUB</span></h3>
+      <p class="hint" style="margin-top:0">Genera una URL <b>data:</b> completa para pegar en VLC, IPTV Smarters, TiviMate o el navegador.</p>
       <textarea id="urlWeb" readonly placeholder="Pulsa un botón para generar la URL…" style="min-height:70px"></textarea>
       <p class="hint" id="urlWebInfo">— longitud —</p>
       <div class="row">
@@ -245,10 +257,9 @@
       <div class="aviso" id="avisoWeb" style="display:none"></div>
     </div>
 
-    <!-- Enlace hash -->
     <div class="panel" style="border-color:rgba(123,47,247,.4)">
       <h3>🔗 Enlace compartible (hash)</h3>
-      <input type="text" id="urlUnica" readonly placeholder="Pulsa «Generar enlace»…">
+      <input type="text" id="urlUnica" readonly placeholder="Pulsa «Generar»…">
       <div class="row">
         <button class="btn purple" id="btnUrlShare">🔗 Generar</button>
         <button class="btn green"  id="btnCopiarUrl">📋 Copiar</button>
@@ -275,11 +286,131 @@
 <script>
 const $ = id => document.getElementById(id);
 const video = $('player'), liveBadge = $('liveBadge'), listaCola = $('listaCola');
+const diagEl = $('diag');
 let hls=null, cola=[], idx=0, activo=false, cargaId=0, watchdog=null;
 let cfg = { intro:null, ads:[], movies:[], loop:true };
 let ghCfg = { token:'', owner:'', repo:'', branch:'main', folder:'' };
+let fallos = new Set();  // índices de items que han fallado
 
-/* ---------- Base64 UTF-8 ---------- */
+/* =========================================================
+   ★ CORRECTOR DE URLs DE ARCHIVE.ORG Y OTRAS
+   ========================================================= */
+function corregirUrl(url){
+  if(!url) return url;
+  let u = url.trim();
+
+  /* Archive.org: /serve/ID/file → /download/ID/file */
+  u = u.replace(/^https?:\/\/archive\.org\/serve\//i, 'https://archive.org/download/');
+  u = u.replace(/^https?:\/\/www\.archive\.org\/serve\//i, 'https://archive.org/download/');
+  u = u.replace(/^https?:\/\/archive\.org\/details\//i, 'https://archive.org/download/');
+  u = u.replace(/^https?:\/\/archive\.org\/embed\//i, 'https://archive.org/download/');
+  u = u.replace(/^https?:\/\/archive\.org\/stream\//i, 'https://archive.org/download/');
+
+  /* archive.org/download/ID/ID.mp4 → algunas veces sirve .ia.mp4: no lo tocamos */
+
+  /* Quitar fragmentos que rompen el <video> */
+  u = u.replace(/#.*$/, '');
+
+  return u;
+}
+
+function corregirTodasLasUrls(){
+  let cambios = 0;
+  ['inIntro','inAds','inMovies'].forEach(id => {
+    const ta = $(id);
+    const lineas = ta.value.split('\n');
+    const nuevas = lineas.map(linea => {
+      const t = linea.trim();
+      if(!t) return linea;
+      const p = t.split('|');
+      const urlOrig = p[p.length-1].trim();
+      const urlFix = corregirUrl(urlOrig);
+      if(urlFix !== urlOrig){
+        cambios++;
+        p[p.length-1] = ' ' + urlFix;
+        return p.join('|');
+      }
+      return linea;
+    });
+    ta.value = nuevas.join('\n');
+  });
+
+  if(cambios > 0){
+    $('avisoFix').style.display = 'block';
+    $('avisoFix').className = 'aviso ok';
+    $('avisoFix').innerHTML = `✅ Se corrigieron <b>${cambios}</b> URL(s). Revisa la lista y pulsa «Iniciar transmisión».`;
+    guardarLocal();
+    toast(`🛠 ${cambios} URL(s) corregidas`);
+  } else {
+    $('avisoFix').style.display = 'block';
+    $('avisoFix').className = 'aviso info';
+    $('avisoFix').innerHTML = `ℹ No se encontraron URLs de Archive.org que necesiten corrección.`;
+    toast('ℹ No había nada que corregir');
+  }
+}
+
+/* Verifica URLs con fetch HEAD */
+async function verificarUrls(){
+  const todas = [];
+  const push = (raw, id) => {
+    raw.split('\n').forEach(l => {
+      const t = l.trim(); if(!t || t.startsWith('#')) return;
+      const p = t.split('|');
+      const url = p[p.length-1].trim();
+      if(url) todas.push({ id, url });
+    });
+  };
+  push($('inIntro').value, 'intro');
+  push($('inAds').value, 'ads');
+  push($('inMovies').value, 'movies');
+
+  if(!todas.length){ toast('⚠ No hay URLs para verificar', true); return; }
+
+  const btn = $('btnCheck'); const orig = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Verificando…';
+
+  const resultados = [];
+  for(const item of todas){
+    let estado = '❓ Desconocido';
+    try{
+      const ctrl = new AbortController();
+      const to = setTimeout(()=>ctrl.abort(), 7000);
+      const r = await fetch(item.url, { method:'HEAD', signal: ctrl.signal, mode: 'no-cors' });
+      clearTimeout(to);
+      /* no-cors devuelve opaque: no podemos ver el status, pero si no lanza error suele existir */
+      estado = '✅ Accesible';
+    }catch(e){
+      try{
+        /* segundo intento con GET Range */
+        const r2 = await fetch(item.url, { method:'GET', headers:{'Range':'bytes=0-1024'}, mode:'no-cors' });
+        estado = '✅ Accesible (parcial)';
+      }catch(e2){
+        estado = '❌ No accesible / CORS / 404';
+      }
+    }
+    resultados.push({ ...item, estado });
+  }
+
+  btn.disabled = false; btn.innerHTML = orig;
+
+  const malas = resultados.filter(r => r.estado.startsWith('❌'));
+  const av = $('avisoFix'); av.style.display = 'block';
+  if(malas.length){
+    av.className = 'aviso err';
+    av.innerHTML = `❌ <b>${malas.length} de ${resultados.length} URL(s) parecen inaccesibles:</b><br>` +
+      malas.slice(0,5).map(r => `• <code>${escapeHtml(r.url.substring(0,80))}…</code>`).join('<br>') +
+      (malas.length > 5 ? `<br>…y ${malas.length - 5} más.` : '') +
+      `<br><br>💡 Prueba con «Corregir URLs de Archive.org» o cambia el enlace por uno directo <code>/download/</code>.`;
+  } else {
+    av.className = 'aviso ok';
+    av.innerHTML = `✅ Las ${resultados.length} URL(s) parecen accesibles.`;
+  }
+  toast(`🔍 Verificación completa: ${resultados.length - malas.length}/${resultados.length} OK`);
+}
+
+/* =========================================================
+   BASE64 UTF-8
+   ========================================================= */
 function b64encode(str){
   const bytes = new TextEncoder().encode(str);
   let bin=''; const CHUNK=0x8000;
@@ -294,7 +425,9 @@ function b64decode(b64){
 const toUrlSafe = b => b.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 const fromUrlSafe = s => { s=s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4) s+='='; return s; };
 
-/* ---------- Utils ---------- */
+/* =========================================================
+   UTILS
+   ========================================================= */
 const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function nombreDesdeUrl(url){
   try{ const l=url.split('?')[0].split('#')[0]; const b=l.substring(l.lastIndexOf('/')+1)||'elemento';
@@ -303,10 +436,10 @@ function nombreDesdeUrl(url){
 function parseLinea(linea){
   const p = linea.split('|');
   if(p.length>=2){
-    const url = p[p.length-1].trim();
+    const url = corregirUrl(p[p.length-1].trim());
     return { titulo: p.slice(0,-1).join('|').trim() || nombreDesdeUrl(url), url };
   }
-  const url = linea.trim();
+  const url = corregirUrl(linea.trim());
   return { titulo: nombreDesdeUrl(url), url };
 }
 const limpiarLineas = t => t.split('\n').map(s=>s.trim()).filter(s=>s && !s.startsWith('#'));
@@ -316,12 +449,20 @@ function toast(msg, err){
   t.classList.add('show');
   clearTimeout(t._tm); t._tm = setTimeout(()=>t.classList.remove('show'), 3200);
 }
+function mostrarDiag(msg, dur){
+  diagEl.textContent = msg;
+  diagEl.classList.add('on');
+  clearTimeout(diagEl._tm);
+  diagEl._tm = setTimeout(()=>diagEl.classList.remove('on'), dur || 5000);
+}
 const slug = t => String(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
   .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').substring(0,40) || 'canal';
 
 setInterval(()=>{ $('reloj').textContent = new Date().toLocaleTimeString('es-ES',{hour12:false}); }, 1000);
 
-/* ---------- Config ---------- */
+/* =========================================================
+   CONFIG
+   ========================================================= */
 function leerConfig(){
   const ir = limpiarLineas($('inIntro').value);
   cfg.intro = ir.length ? parseLinea(ir[0]) : null;
@@ -339,14 +480,11 @@ function deserializarConfig(str){
     }
   }catch(e){} return false;
 }
-function guardarLocal(){
-  try{ localStorage.setItem('cinefusion_cfg', serializarConfig()); }catch(e){}
-}
+function guardarLocal(){ try{ localStorage.setItem('cinefusion_cfg', serializarConfig()); }catch(e){} }
 function cargarLocal(){
   try{ const r = localStorage.getItem('cinefusion_cfg'); return r ? deserializarConfig(r) : false; }catch(e){ return false; }
 }
 
-/* ---------- GitHub config ---------- */
 function guardarGhCfg(){
   ghCfg = {
     token: $('ghToken').value.trim(),
@@ -375,30 +513,26 @@ function cargarGhCfg(){
 }
 function ghValido(){
   guardarGhCfg();
-  if(!ghCfg.token){ toast('⚠ Falta el token de GitHub', true); return false; }
-  if(!ghCfg.owner){ toast('⚠ Falta el usuario/organización', true); return false; }
+  if(!ghCfg.token){ toast('⚠ Falta el token', true); return false; }
+  if(!ghCfg.owner){ toast('⚠ Falta el usuario', true); return false; }
   if(!ghCfg.repo){  toast('⚠ Falta el repositorio', true); return false; }
   return true;
 }
 
-/* ---------- GitHub API ---------- */
+/* =========================================================
+   GITHUB API
+   ========================================================= */
 function ghApiUrl(path){
   const p = ghCfg.folder ? ghCfg.folder + '/' + path : path;
   return `https://api.github.com/repos/${ghCfg.owner}/${ghCfg.repo}/contents/${p}`;
 }
-function ghPath(path){
-  return ghCfg.folder ? ghCfg.folder + '/' + path : path;
-}
+function ghPath(path){ return ghCfg.folder ? ghCfg.folder + '/' + path : path; }
 async function ghGetSha(path){
   const r = await fetch(ghApiUrl(path) + '?ref=' + encodeURIComponent(ghCfg.branch), {
     headers: { 'Authorization': 'token ' + ghCfg.token, 'Accept': 'application/vnd.github.v3+json' }
   });
   if(r.status === 404) return null;
-  if(!r.ok){
-    let m = 'Error ' + r.status;
-    try{ const j = await r.json(); m = j.message || m; }catch(e){}
-    throw new Error(m);
-  }
+  if(!r.ok){ let m='Error '+r.status; try{ const j=await r.json(); m=j.message||m; }catch(e){} throw new Error(m); }
   const j = await r.json();
   return j.sha || null;
 }
@@ -408,30 +542,15 @@ async function ghPut(path, content, message){
   if(sha) body.sha = sha;
   const r = await fetch(ghApiUrl(path), {
     method: 'PUT',
-    headers: {
-      'Authorization': 'token ' + ghCfg.token,
-      'Accept': 'application/vnd.github.v3+json',
-      'Content-Type': 'application/json'
-    },
+    headers: { 'Authorization':'token '+ghCfg.token, 'Accept':'application/vnd.github.v3+json', 'Content-Type':'application/json' },
     body: JSON.stringify(body)
   });
-  if(!r.ok){
-    let m = 'Error ' + r.status;
-    try{ const j = await r.json(); m = j.message || m; }catch(e){}
-    throw new Error(m);
-  }
+  if(!r.ok){ let m='Error '+r.status; try{ const j=await r.json(); m=j.message||m; }catch(e){} throw new Error(m); }
   return await r.json();
 }
-function ghPagesUrl(path){
-  const p = ghPath(path);
-  return `https://${ghCfg.owner}.github.io/${ghCfg.repo}/${p}`;
-}
-function ghRawUrl(path){
-  const p = ghPath(path);
-  return `https://raw.githubusercontent.com/${ghCfg.owner}/${ghCfg.repo}/${ghCfg.branch}/${p}`;
-}
+function ghPagesUrl(path){ return `https://${ghCfg.owner}.github.io/${ghCfg.repo}/${ghPath(path)}`; }
+function ghRawUrl(path){ return `https://raw.githubusercontent.com/${ghCfg.owner}/${ghCfg.repo}/${ghCfg.branch}/${ghPath(path)}`; }
 
-/* ---------- GitHub: probar conexión ---------- */
 async function ghTest(){
   if(!ghValido()) return;
   const btn = $('btnGhTest'); const orig = btn.innerHTML;
@@ -455,7 +574,6 @@ async function ghTest(){
   }
 }
 
-/* ---------- GitHub: guardar M3U ---------- */
 async function ghGuardarM3U(){
   if(!ghValido()) return;
   generarM3U();
@@ -465,64 +583,54 @@ async function ghGuardarM3U(){
   const btn = $('btnGhM3U'); const orig = btn.innerHTML;
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Subiendo M3U…';
 
-  const nombreArchivo = 'cinefusiontv.m3u';
   try{
-    await ghPut(nombreArchivo, m3u, 'Actualizar playlist M3U desde CinefusiónTV');
-    const urlPages = ghPagesUrl(nombreArchivo);
-    const urlRaw   = ghRawUrl(nombreArchivo);
+    await ghPut('cinefusiontv.m3u', m3u, 'Actualizar M3U desde CinefusiónTV');
+    const urlPages = ghPagesUrl('cinefusiontv.m3u');
+    const urlRaw   = ghRawUrl('cinefusiontv.m3u');
 
     $('resM3UUrl').classList.remove('vacio');
     $('resM3UUrl').innerHTML =
       `<div style="margin-bottom:6px"><b>GitHub Pages:</b><br>${escapeHtml(urlPages)}</div>` +
       `<div style="color:#8b8ba7"><b>Raw:</b><br>${escapeHtml(urlRaw)}</div>`;
 
-    mostrarGh('ok',
-      `✅ M3U guardado en <code>${escapeHtml(ghPath(nombreArchivo))}</code><br>
-       🌐 <b>URL para reproductores:</b> ${escapeHtml(urlPages)}`);
-
+    mostrarGh('ok', `✅ M3U guardado → <code>${escapeHtml(urlPages)}</code>`);
     toast('📼 M3U guardado en GitHub');
   }catch(e){
-    mostrarGh('err', `❌ Error al guardar M3U: ${escapeHtml(e.message)}`);
+    mostrarGh('err', `❌ Error: ${escapeHtml(e.message)}`);
     toast('❌ ' + e.message, true);
   }finally{
     btn.disabled = false; btn.innerHTML = orig;
   }
 }
 
-/* ---------- GitHub: guardar Reproductor HTML ---------- */
 async function ghGuardarPlayer(){
   if(!ghValido()) return;
   const html = construirHTMLReproductor();
-  if(!html){ return; }
+  if(!html) return;
 
   const btn = $('btnGhPlayer'); const orig = btn.innerHTML;
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Subiendo reproductor…';
 
-  const nombreArchivo = 'cinefusiontv-player.html';
   try{
-    await ghPut(nombreArchivo, html, 'Actualizar reproductor desde CinefusiónTV');
-    const urlPages = ghPagesUrl(nombreArchivo);
-    const urlRaw   = ghRawUrl(nombreArchivo);
+    await ghPut('cinefusiontv-player.html', html, 'Actualizar reproductor desde CinefusiónTV');
+    const urlPages = ghPagesUrl('cinefusiontv-player.html');
+    const urlRaw   = ghRawUrl('cinefusiontv-player.html');
 
     $('resPlayerUrl').classList.remove('vacio');
     $('resPlayerUrl').innerHTML =
       `<div style="margin-bottom:6px"><b>GitHub Pages:</b><br>${escapeHtml(urlPages)}</div>` +
       `<div style="color:#8b8ba7"><b>Raw:</b><br>${escapeHtml(urlRaw)}</div>`;
 
-    mostrarGh('ok',
-      `✅ Reproductor guardado en <code>${escapeHtml(ghPath(nombreArchivo))}</code><br>
-       ▶ <b>URL del reproductor:</b> ${escapeHtml(urlPages)}`);
-
+    mostrarGh('ok', `✅ Reproductor guardado → <code>${escapeHtml(urlPages)}</code>`);
     toast('🎬 Reproductor guardado en GitHub');
   }catch(e){
-    mostrarGh('err', `❌ Error al guardar reproductor: ${escapeHtml(e.message)}`);
+    mostrarGh('err', `❌ Error: ${escapeHtml(e.message)}`);
     toast('❌ ' + e.message, true);
   }finally{
     btn.disabled = false; btn.innerHTML = orig;
   }
 }
 
-/* ---------- GitHub: ambos ---------- */
 async function ghGuardarAmbos(){
   if(!ghValido()) return;
   await ghGuardarM3U();
@@ -537,16 +645,17 @@ function mostrarGh(tipo, html){
   a.innerHTML = html;
 }
 
-/* ---------- Copiar URLs de resultado ---------- */
+/* =========================================================
+   COPIAR URLs DE RESULTADO
+   ========================================================= */
 function copiarTexto(txt, msg){
   if(!txt || txt.includes('Sin URL')){ toast('⚠ No hay URL todavía', true); return; }
-  /* Extraer solo la URL de GitHub Pages (primera línea) */
-  const url = txt.split('\n').find(l => l.includes('https://')) || txt;
-  const limpia = url.replace(/^.*?(https:\/\/[^\s<]+).*$/,'$1').trim();
-
-  if(navigator.clipboard && limpia.length < 50000){
-    navigator.clipboard.writeText(limpia).then(()=>toast(msg || '📋 URL copiada')).catch(()=>fallback(limpia, msg));
-  } else fallback(limpia, msg);
+  const m = txt.match(/https:\/\/[^\s<]+/);
+  if(!m){ toast('⚠ URL no encontrada', true); return; }
+  const url = m[0];
+  if(navigator.clipboard && url.length < 50000){
+    navigator.clipboard.writeText(url).then(()=>toast(msg || '📋 Copiado')).catch(()=>fallback(url, msg));
+  } else fallback(url, msg);
 }
 function fallback(v, msg){
   const ta = document.createElement('textarea');
@@ -557,13 +666,13 @@ function fallback(v, msg){
 }
 function abrirUrl(txt){
   if(!txt || txt.includes('Sin URL')){ toast('⚠ No hay URL', true); return; }
-  const url = txt.match(/https:\/\/[^\s<]+/);
-  if(url) window.open(url[0], '_blank', 'noopener');
+  const m = txt.match(/https:\/\/[^\s<]+/);
+  if(m) window.open(m[0], '_blank', 'noopener');
   else toast('⚠ URL no encontrada', true);
 }
 
 /* =========================================================
-   COLA / MOTOR (igual que antes)
+   COLA / MOTOR
    ========================================================= */
 function construirCola(inc){
   const c = [];
@@ -578,12 +687,14 @@ function construirCola(inc){
 }
 function renderCola(){
   if(!cola.length){ listaCola.innerHTML = '<li class="vacio">Sin elementos en la cola</li>'; return; }
-  listaCola.innerHTML = cola.map((it,i)=>`
-    <li class="${i===idx?'activo':''}">
+  listaCola.innerHTML = cola.map((it,i)=>{
+    const cl = i===idx ? 'activo' : (fallos.has(i) ? 'fallo' : '');
+    return `<li class="${cl}">
       <span class="num">${String(i+1).padStart(2,'0')}</span>
       <span class="tipo">${escapeHtml(it.tipo)}</span>
       <span class="nom">${escapeHtml(it.titulo)}</span>
-    </li>`).join('');
+    </li>`;
+  }).join('');
 }
 function setEstado(on, txt){
   $('statusPill').classList.toggle('on', on);
@@ -594,7 +705,7 @@ function iniciar(auto){
   leerConfig();
   validarHttps();
   if(!cfg.intro && !cfg.ads.length && !cfg.movies.length){ toast('⚠ Añade al menos una URL', true); return; }
-  activo = true; cola = construirCola(true); idx = 0;
+  activo = true; cola = construirCola(true); idx = 0; fallos.clear();
   setEstado(true, 'EN EMISIÓN'); renderCola(); playActual();
   if(!auto) toast('🔴 Transmisión iniciada');
 }
@@ -605,6 +716,7 @@ function detener(){
   setEstado(false, 'DETENIDO');
   $('tipoActual').textContent='—'; $('tituloActual').textContent='Sin emisión';
   $('siguienteTxt').textContent='Siguiente: —';
+  diagEl.classList.remove('on');
 }
 function siguiente(){
   if(!activo) return;
@@ -624,39 +736,83 @@ function playActual(){
   $('siguienteTxt').textContent = 'Siguiente: ' + (sig ? sig.titulo : '—');
   renderCola(); cargarMedio(item.url);
 }
-function cargarMedio(url){
+function cargarMedio(urlOriginal){
   const miId = ++cargaId;
   clearTimeout(watchdog);
   if(hls){ hls.destroy(); hls = null; }
   video.pause(); video.removeAttribute('src'); video.load();
 
+  /* Corregir URL en el último momento por si acaso */
+  const url = corregirUrl(urlOriginal);
+  if(url !== urlOriginal){
+    console.log('[AutoFix]', urlOriginal, '→', url);
+  }
+
   if(location.protocol === 'https:' && /^http:\/\//i.test(url)){
     console.warn('[MixedContent]', url);
+    mostrarDiag('⚠ URL HTTP bloqueada por el navegador (contenido mixto). Saltando…', 4000);
     toast('⚠ URL HTTP bloqueada, saltando…', true);
-    setTimeout(()=>{ if(miId===cargaId) saltar(); }, 900); return;
+    marcarFallo();
+    setTimeout(()=>{ if(miId===cargaId) saltar(); }, 1200); return;
   }
+
   const esHLS = /\.m3u8(\?|#|$)/i.test(url);
+
   if(esHLS && window.Hls && Hls.isSupported()){
     hls = new Hls({lowLatencyMode:true, liveDurationInfinity:true, maxBufferLength:30, manifestLoadingTimeOut:15000});
     hls.loadSource(url); hls.attachMedia(video);
     hls.on(Hls.Events.MANIFEST_PARSED, ()=>{ if(miId===cargaId) video.play().catch(()=>{}); });
     hls.on(Hls.Events.ERROR, (e,d)=>{
       if(miId!==cargaId || !d.fatal) return;
+      console.warn('[HLS error]', d);
       if(d.type===Hls.ErrorTypes.NETWORK_ERROR) hls.startLoad();
       else if(d.type===Hls.ErrorTypes.MEDIA_ERROR) hls.recoverMediaError();
-      else saltar();
+      else {
+        mostrarDiag('❌ Error HLS en: ' + (cola[idx]?.titulo || '') + '. Saltando…', 4000);
+        marcarFallo();
+        saltar();
+      }
     });
-  } else { video.src = url; video.load(); video.play().catch(()=>{}); }
-  watchdog = setTimeout(()=>{ if(miId===cargaId && video.readyState<2) saltar(); }, 20000);
+  } else {
+    video.src = url;
+    video.load();
+    video.play().catch(()=>{});
+  }
+
+  watchdog = setTimeout(()=>{
+    if(miId===cargaId && video.readyState < 2){
+      console.warn('[Watchdog] Fuente no responde: ' + url);
+      mostrarDiag('⏱ La fuente no responde (¿URL rota?): ' + url.substring(0, 60) + '… Saltando…', 5000);
+      marcarFallo();
+      saltar();
+    }
+  }, 20000);
+}
+function marcarFallo(){
+  if(cola[idx]) fallos.add(idx);
+  renderCola();
 }
 function saltar(){ if(activo) siguiente(); }
+
 video.addEventListener('ended', ()=>{ if(activo) siguiente(); });
-video.addEventListener('playing', ()=> clearTimeout(watchdog));
-video.addEventListener('error', ()=>{ if(activo && !hls) saltar(); });
+video.addEventListener('playing', ()=>{
+  clearTimeout(watchdog);
+  if(cola[idx]) fallos.delete(idx);
+  diagEl.classList.remove('on');
+});
+video.addEventListener('error', (e)=>{
+  if(!activo || hls) return;
+  const err = video.error;
+  const msg = err ? `Código ${err.code}: ${err.message || 'error de reproducción'}` : 'error desconocido';
+  console.warn('[Video error]', msg);
+  mostrarDiag('❌ No se pudo reproducir: ' + (cola[idx]?.titulo || '') + ' (' + msg + '). Saltando…', 5000);
+  marcarFallo();
+  saltar();
+});
 video.addEventListener('stalled', ()=>{
   if(!activo) return;
   clearTimeout(watchdog);
-  watchdog = setTimeout(()=>{ if(video.readyState<2) saltar(); }, 12000);
+  watchdog = setTimeout(()=>{ if(video.readyState < 2){ marcarFallo(); saltar(); } }, 12000);
 });
 
 /* =========================================================
@@ -698,7 +854,7 @@ function obtenerM3UActual(){
 }
 
 /* =========================================================
-   REPRODUCTOR HTML AUTÓNOMO (plantilla)
+   REPRODUCTOR HTML AUTÓNOMO (con auto-fix de URLs)
    ========================================================= */
 function plantillaPlayer(playlistJson, titulo){
   const T = escapeHtml(titulo);
@@ -725,12 +881,15 @@ video{width:100%;height:100%;object-fit:contain;background:#000}
 #gate.on{display:flex}
 #gate .play{width:96px;height:96px;border-radius:50%;background:#e50914;display:grid;place-items:center;font-size:38px;color:#fff;box-shadow:0 14px 44px rgba(229,9,20,.55)}
 #gate p{font-size:15px;color:#ccc;margin:0}
-#msg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:#888;font-size:14px;display:none;z-index:3}
+#msg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:#888;font-size:14px;display:none;z-index:3;max-width:80%}
+#err{position:absolute;top:70px;left:20px;right:20px;background:rgba(229,9,20,.95);color:#fff;padding:10px 14px;border-radius:8px;font-size:12.5px;font-weight:600;display:none;z-index:15;line-height:1.5}
+#err.on{display:block}
 </style></head><body>
 <div id="stage">
 <video id="v" playsinline controls preload="auto" autoplay></video>
 <div id="badge"><span class="pt"></span> EN VIVO</div>
 <div id="bar"><button id="bSkip">⏭</button><button id="bFs">⛶</button></div>
+<div id="err"></div>
 <div id="msg">Cargando emisión…</div>
 <div id="info"><div><span id="tag">—</span><div id="t">Cargando…</div></div><div id="s"></div></div>
 <div id="gate"><div class="play">▶</div><p>Pulsa para iniciar la emisión</p></div>
@@ -740,7 +899,20 @@ video{width:100%;height:100%;object-fit:contain;background:#000}
 var PL=${playlistJson},i=0,hls=null,wd=null,cid=0;
 var v=document.getElementById('v'),gate=document.getElementById('gate'),
     elTag=document.getElementById('tag'),elT=document.getElementById('t'),
-    elS=document.getElementById('s'),elMsg=document.getElementById('msg');
+    elS=document.getElementById('s'),elMsg=document.getElementById('msg'),
+    elErr=document.getElementById('err');
+
+/* Corrector de URL dentro del reproductor */
+function fixUrl(u){
+  if(!u) return u;
+  u = u.replace(/^https?:\\/\\/archive\\.org\\/serve\\//i,'https://archive.org/download/');
+  u = u.replace(/^https?:\\/\\/www\\.archive\\.org\\/serve\\//i,'https://archive.org/download/');
+  u = u.replace(/^https?:\\/\\/archive\\.org\\/details\\//i,'https://archive.org/download/');
+  u = u.replace(/^https?:\\/\\/archive\\.org\\/embed\\//i,'https://archive.org/download/');
+  u = u.replace(/#.*$/,'');
+  return u;
+}
+function showErr(m){ elErr.textContent=m; elErr.classList.add('on'); clearTimeout(elErr._t); elErr._t=setTimeout(function(){elErr.classList.remove('on');},5000); }
 function tryPlay(){var p=v.play();if(p&&p.catch)p.catch(function(){gate.classList.add('on');});}
 function load(it){
   var my=++cid;clearTimeout(wd);
@@ -750,24 +922,38 @@ function load(it){
   elT.textContent=it.titulo||'Canal';
   var nx=PL[(i+1)%PL.length];elS.textContent=nx?'Siguiente: '+nx.titulo:'';
   elMsg.style.display='block';elMsg.textContent='Cargando: '+(it.titulo||'');
-  var isHls=/\\.m3u8(\\?|#|$)/i.test(it.url);
+
+  var url = fixUrl(it.url);
+  var isHls=/\.m3u8(\?|#|$)/i.test(url);
+
   if(isHls&&window.Hls&&Hls.isSupported()){
     hls=new Hls({lowLatencyMode:true,liveDurationInfinity:true,maxBufferLength:30});
-    hls.loadSource(it.url);hls.attachMedia(v);
+    hls.loadSource(url);hls.attachMedia(v);
     hls.on(Hls.Events.MANIFEST_PARSED,function(){if(my!==cid)return;elMsg.style.display='none';tryPlay();});
     hls.on(Hls.Events.ERROR,function(e,d){
       if(my!==cid||!d||!d.fatal)return;
       if(d.type===Hls.ErrorTypes.NETWORK_ERROR)hls.startLoad();
       else if(d.type===Hls.ErrorTypes.MEDIA_ERROR)hls.recoverMediaError();
-      else next();
+      else { showErr('❌ Error HLS · saltando…'); next(); }
     });
-  } else { v.src=it.url; v.load(); tryPlay(); }
-  wd=setTimeout(function(){if(my===cid&&v.readyState<2)next();},20000);
+  } else { v.src=url; v.load(); tryPlay(); }
+
+  wd=setTimeout(function(){
+    if(my===cid && v.readyState<2){
+      showErr('⏱ Fuente no responde · saltando…');
+      next();
+    }
+  },20000);
 }
 function next(){i=(i+1)%PL.length;load(PL[i]);}
 v.addEventListener('ended',next);
-v.addEventListener('playing',function(){clearTimeout(wd);elMsg.style.display='none';gate.classList.remove('on');});
-v.addEventListener('error',function(){if(!hls)next();});
+v.addEventListener('playing',function(){clearTimeout(wd);elMsg.style.display='none';gate.classList.remove('on');elErr.classList.remove('on');});
+v.addEventListener('error',function(){
+  if(hls)return;
+  var e=v.error;
+  showErr('❌ No se pudo reproducir'+(e?' (código '+e.code+')':'')+' · saltando…');
+  next();
+});
 v.addEventListener('waiting',function(){if(v.readyState<2)elMsg.style.display='block';});
 gate.addEventListener('click',function(){gate.classList.remove('on');tryPlay();});
 document.getElementById('bSkip').addEventListener('click',next);
@@ -790,7 +976,7 @@ function construirHTMLReproductor(){
 }
 
 /* =========================================================
-   URL DATA URI (sin GitHub)
+   DATA URI
    ========================================================= */
 function generarUrlM3U(){
   const m3u = obtenerM3UActual();
@@ -807,7 +993,7 @@ function generarUrlPlayer(){
   $('urlWeb').value = url;
   $('urlWebInfo').textContent = `Reproductor HTML · ${url.length.toLocaleString('es-ES')} caracteres`;
   const av = $('avisoWeb'); av.style.display='block'; av.className='aviso ok';
-  av.innerHTML = `✅ <b>URL del reproductor generada</b>. Pégala en la barra del navegador y pulsa Enter.`;
+  av.innerHTML = `✅ <b>URL del reproductor generada</b>. Pégala en la barra del navegador.`;
   toast('▶ URL del reproductor lista');
 }
 function generarEmbed(){
@@ -932,7 +1118,7 @@ function importarM3U(){
 function cargarDesdeM3U(texto){
   const items = parsearM3U(texto);
   if(!items.length){ toast('⚠ M3U vacío', true); return; }
-  cola = items; idx = 0; activo = true;
+  cola = items; idx = 0; activo = true; fallos.clear();
   setEstado(true,'EN EMISIÓN'); renderCola(); playActual();
   toast('▶ Reproduciendo ('+items.length+' items)');
 }
@@ -949,7 +1135,7 @@ function parsearM3U(texto){
       let tipo = 'PELÍCULA';
       if(/inicio|intro/i.test(grupo)) tipo = 'INICIO';
       else if(/public|comercial|anuncio/i.test(grupo)) tipo = 'PUBLICIDAD';
-      items.push({tipo, titulo: titulo || nombreDesdeUrl(l), url: l});
+      items.push({tipo, titulo: titulo || nombreDesdeUrl(l), url: corregirUrl(l)});
       titulo = ''; grupo = '';
     }
   });
@@ -962,7 +1148,7 @@ function validarHttps(){
   const todas = [$('inIntro').value, $('inAds').value, $('inMovies').value].join('\n').split('\n')
     .map(s=>{ const p=s.split('|'); return p[p.length-1].trim(); }).filter(u=>/^http:\/\//i.test(u));
   if(todas.length){
-    cont.innerHTML = `<div class="aviso err">⚠ <strong>${todas.length} URL(s) HTTP</strong> no cargarán desde HTTPS. Cámbialas a HTTPS.</div>`;
+    cont.innerHTML = `<div class="aviso err">⚠ <strong>${todas.length} URL(s) HTTP</strong> no cargarán desde HTTPS. Usa «🛠 Corregir URLs» o cámbialas a HTTPS.</div>`;
   }
 }
 
@@ -995,6 +1181,10 @@ $('btnCopiar').addEventListener('click', copiarM3U);
 $('btnDescargar').addEventListener('click', descargarM3U);
 $('btnImportar').addEventListener('click', importarM3U);
 $('btnGuardar').addEventListener('click', ()=>{ guardarLocal(); guardarGhCfg(); toast('💾 Guardado local'); });
+
+/* Corrector */
+$('btnFix').addEventListener('click', corregirTodasLasUrls);
+$('btnCheck').addEventListener('click', verificarUrls);
 
 /* GitHub */
 $('btnGhTest').addEventListener('click', ghTest);
@@ -1047,7 +1237,7 @@ $('chkLoop').addEventListener('change', ()=>{ cfg.loop = $('chkLoop').checked; }
   }
   if(!cargarLocal()) cargarDemo();
   leerConfig(); validarHttps(); renderCola();
-  console.log('%c🎬 CinefusiónTV · GitHub lista','color:#e50914;font-weight:bold;font-size:14px');
+  console.log('%c🎬 CinefusiónTV · listo (con corrección Archive.org)','color:#e50914;font-weight:bold;font-size:14px');
 })();
 window.addEventListener('hashchange', ()=>{
   const h = leerHash();
