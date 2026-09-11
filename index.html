@@ -290,7 +290,7 @@ const diagEl = $('diag');
 let hls=null, cola=[], idx=0, activo=false, cargaId=0, watchdog=null;
 let cfg = { intro:null, ads:[], movies:[], loop:true };
 let ghCfg = { token:'', owner:'', repo:'', branch:'main', folder:'' };
-let fallos = new Set();  // índices de items que han fallado
+let fallos = new Set();
 
 /* =========================================================
    ★ CORRECTOR DE URLs DE ARCHIVE.ORG Y OTRAS
@@ -299,16 +299,18 @@ function corregirUrl(url){
   if(!url) return url;
   let u = url.trim();
 
+  /* Convertir http a https obligatoriamente si el sitio carga en HTTPS */
+  if(location.protocol === 'https:' && /^http:\/\//i.test(u)){
+    u = u.replace(/^http:\/\//i, 'https://');
+  }
+
   /* Archive.org: /serve/ID/file → /download/ID/file */
-  u = u.replace(/^https?:\/\/archive\.org\/serve\//i, 'https://archive.org/download/');
-  u = u.replace(/^https?:\/\/www\.archive\.org\/serve\//i, 'https://archive.org/download/');
-  u = u.replace(/^https?:\/\/archive\.org\/details\//i, 'https://archive.org/download/');
-  u = u.replace(/^https?:\/\/archive\.org\/embed\//i, 'https://archive.org/download/');
-  u = u.replace(/^https?:\/\/archive\.org\/stream\//i, 'https://archive.org/download/');
+  u = u.replace(/^https?:\/\/(www\.)?archive\.org\/serve\//i, 'https://archive.org/download/');
+  u = u.replace(/^https?:\/\/(www\.)?archive\.org\/details\//i, 'https://archive.org/download/');
+  u = u.replace(/^https?:\/\/(www\.)?archive\.org\/embed\//i, 'https://archive.org/download/');
+  u = u.replace(/^https?:\/\/(www\.)?archive\.org\/stream\//i, 'https://archive.org/download/');
 
-  /* archive.org/download/ID/ID.mp4 → algunas veces sirve .ia.mp4: no lo tocamos */
-
-  /* Quitar fragmentos que rompen el <video> */
+  /* Quitar fragmentos de hash que rompen la reproducción de HTML5 Video */
   u = u.replace(/#.*$/, '');
 
   return u;
@@ -344,12 +346,12 @@ function corregirTodasLasUrls(){
   } else {
     $('avisoFix').style.display = 'block';
     $('avisoFix').className = 'aviso info';
-    $('avisoFix').innerHTML = `ℹ No se encontraron URLs de Archive.org que necesiten corrección.`;
+    $('avisoFix').innerHTML = `ℹ No se encontraron URLs que necesiten corrección.`;
     toast('ℹ No había nada que corregir');
   }
 }
 
-/* Verifica URLs con fetch HEAD */
+/* Verificar URLs con fetch seguro */
 async function verificarUrls(){
   const todas = [];
   const push = (raw, id) => {
@@ -375,14 +377,12 @@ async function verificarUrls(){
     try{
       const ctrl = new AbortController();
       const to = setTimeout(()=>ctrl.abort(), 7000);
-      const r = await fetch(item.url, { method:'HEAD', signal: ctrl.signal, mode: 'no-cors' });
+      await fetch(item.url, { method:'HEAD', signal: ctrl.signal, mode: 'no-cors' });
       clearTimeout(to);
-      /* no-cors devuelve opaque: no podemos ver el status, pero si no lanza error suele existir */
       estado = '✅ Accesible';
     }catch(e){
       try{
-        /* segundo intento con GET Range */
-        const r2 = await fetch(item.url, { method:'GET', headers:{'Range':'bytes=0-1024'}, mode:'no-cors' });
+        await fetch(item.url, { method:'GET', headers:{'Range':'bytes=0-1024'}, mode:'no-cors' });
         estado = '✅ Accesible (parcial)';
       }catch(e2){
         estado = '❌ No accesible / CORS / 404';
@@ -409,14 +409,18 @@ async function verificarUrls(){
 }
 
 /* =========================================================
-   BASE64 UTF-8
+   BASE64 SAFE UTF-8 (Fix para archivos grandes / Call Stack Overflow)
    ========================================================= */
-function b64encode(str){
+function b64encode(str) {
   const bytes = new TextEncoder().encode(str);
-  let bin=''; const CHUNK=0x8000;
-  for(let i=0;i<bytes.length;i+=CHUNK) bin += String.fromCharCode.apply(null, bytes.subarray(i,i+CHUNK));
+  let bin = '';
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    bin += String.fromCharCode(bytes[i]);
+  }
   return btoa(bin);
 }
+
 function b64decode(b64){
   const bin = atob(b64); const bytes = new Uint8Array(bin.length);
   for(let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
@@ -513,41 +517,56 @@ function cargarGhCfg(){
 }
 function ghValido(){
   guardarGhCfg();
-  if(!ghCfg.token){ toast('⚠ Falta el token', true); return false; }
-  if(!ghCfg.owner){ toast('⚠ Falta el usuario', true); return false; }
+  if(!ghCfg.token){ toast('⚠ Falta el token de GitHub', true); return false; }
+  if(!ghCfg.owner){ toast('⚠ Falta el usuario de GitHub', true); return false; }
   if(!ghCfg.repo){  toast('⚠ Falta el repositorio', true); return false; }
   return true;
 }
 
 /* =========================================================
-   GITHUB API
+   GITHUB API (Con manejo mejorado de errores)
    ========================================================= */
 function ghApiUrl(path){
   const p = ghCfg.folder ? ghCfg.folder + '/' + path : path;
   return `https://api.github.com/repos/${ghCfg.owner}/${ghCfg.repo}/contents/${p}`;
 }
 function ghPath(path){ return ghCfg.folder ? ghCfg.folder + '/' + path : path; }
+
 async function ghGetSha(path){
   const r = await fetch(ghApiUrl(path) + '?ref=' + encodeURIComponent(ghCfg.branch), {
-    headers: { 'Authorization': 'token ' + ghCfg.token, 'Accept': 'application/vnd.github.v3+json' }
+    headers: { 'Authorization': 'Bearer ' + ghCfg.token, 'Accept': 'application/vnd.github.v3+json' }
   });
   if(r.status === 404) return null;
-  if(!r.ok){ let m='Error '+r.status; try{ const j=await r.json(); m=j.message||m; }catch(e){} throw new Error(m); }
+  if(!r.ok){
+    let m = 'Error ' + r.status;
+    try{ const j = await r.json(); m = j.message || m; }catch(e){}
+    throw new Error(m);
+  }
   const j = await r.json();
   return j.sha || null;
 }
+
 async function ghPut(path, content, message){
   const sha = await ghGetSha(path);
   const body = { message: message || 'CinefusiónTV update', content: b64encode(content), branch: ghCfg.branch };
   if(sha) body.sha = sha;
   const r = await fetch(ghApiUrl(path), {
     method: 'PUT',
-    headers: { 'Authorization':'token '+ghCfg.token, 'Accept':'application/vnd.github.v3+json', 'Content-Type':'application/json' },
+    headers: { 
+      'Authorization': 'Bearer ' + ghCfg.token, 
+      'Accept': 'application/vnd.github.v3+json', 
+      'Content-Type': 'application/json' 
+    },
     body: JSON.stringify(body)
   });
-  if(!r.ok){ let m='Error '+r.status; try{ const j=await r.json(); m=j.message||m; }catch(e){} throw new Error(m); }
+  if(!r.ok){
+    let m = 'Error ' + r.status;
+    try{ const j = await r.json(); m = j.message || m; }catch(e){}
+    throw new Error(m);
+  }
   return await r.json();
 }
+
 function ghPagesUrl(path){ return `https://${ghCfg.owner}.github.io/${ghCfg.repo}/${ghPath(path)}`; }
 function ghRawUrl(path){ return `https://raw.githubusercontent.com/${ghCfg.owner}/${ghCfg.repo}/${ghCfg.branch}/${ghPath(path)}`; }
 
@@ -557,17 +576,17 @@ async function ghTest(){
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Probando…';
   try{
     const r = await fetch(`https://api.github.com/repos/${ghCfg.owner}/${ghCfg.repo}`, {
-      headers: { 'Authorization': 'token ' + ghCfg.token, 'Accept': 'application/vnd.github.v3+json' }
+      headers: { 'Authorization': 'Bearer ' + ghCfg.token, 'Accept': 'application/vnd.github.v3+json' }
     });
     if(!r.ok){
       const j = await r.json().catch(()=>({message:'Error '+r.status}));
       throw new Error(j.message || 'Error ' + r.status);
     }
     const info = await r.json();
-    mostrarGh('ok', `✅ Conectado a <b>${escapeHtml(info.full_name)}</b> · rama por defecto: <b>${escapeHtml(info.default_branch)}</b>`);
+    mostrarGh('ok', `✅ Conectado a <b>${escapeHtml(info.full_name)}</b> · rama: <b>${escapeHtml(ghCfg.branch)}</b>`);
     toast('🔌 Conexión OK');
   }catch(e){
-    mostrarGh('err', `❌ No se pudo conectar: ${escapeHtml(e.message)}`);
+    mostrarGh('err', `❌ Error de conexión: ${escapeHtml(e.message)}`);
     toast('❌ ' + e.message, true);
   }finally{
     btn.disabled = false; btn.innerHTML = orig;
@@ -596,7 +615,7 @@ async function ghGuardarM3U(){
     mostrarGh('ok', `✅ M3U guardado → <code>${escapeHtml(urlPages)}</code>`);
     toast('📼 M3U guardado en GitHub');
   }catch(e){
-    mostrarGh('err', `❌ Error: ${escapeHtml(e.message)}`);
+    mostrarGh('err', `❌ Error al subir M3U: ${escapeHtml(e.message)}`);
     toast('❌ ' + e.message, true);
   }finally{
     btn.disabled = false; btn.innerHTML = orig;
@@ -624,7 +643,7 @@ async function ghGuardarPlayer(){
     mostrarGh('ok', `✅ Reproductor guardado → <code>${escapeHtml(urlPages)}</code>`);
     toast('🎬 Reproductor guardado en GitHub');
   }catch(e){
-    mostrarGh('err', `❌ Error: ${escapeHtml(e.message)}`);
+    mostrarGh('err', `❌ Error al subir Reproductor: ${escapeHtml(e.message)}`);
     toast('❌ ' + e.message, true);
   }finally{
     btn.disabled = false; btn.innerHTML = orig;
@@ -653,9 +672,7 @@ function copiarTexto(txt, msg){
   const m = txt.match(/https:\/\/[^\s<]+/);
   if(!m){ toast('⚠ URL no encontrada', true); return; }
   const url = m[0];
-  if(navigator.clipboard && url.length < 50000){
-    navigator.clipboard.writeText(url).then(()=>toast(msg || '📋 Copiado')).catch(()=>fallback(url, msg));
-  } else fallback(url, msg);
+  fallback(url, msg);
 }
 function fallback(v, msg){
   const ta = document.createElement('textarea');
@@ -742,14 +759,9 @@ function cargarMedio(urlOriginal){
   if(hls){ hls.destroy(); hls = null; }
   video.pause(); video.removeAttribute('src'); video.load();
 
-  /* Corregir URL en el último momento por si acaso */
   const url = corregirUrl(urlOriginal);
-  if(url !== urlOriginal){
-    console.log('[AutoFix]', urlOriginal, '→', url);
-  }
 
   if(location.protocol === 'https:' && /^http:\/\//i.test(url)){
-    console.warn('[MixedContent]', url);
     mostrarDiag('⚠ URL HTTP bloqueada por el navegador (contenido mixto). Saltando…', 4000);
     toast('⚠ URL HTTP bloqueada, saltando…', true);
     marcarFallo();
@@ -764,7 +776,6 @@ function cargarMedio(urlOriginal){
     hls.on(Hls.Events.MANIFEST_PARSED, ()=>{ if(miId===cargaId) video.play().catch(()=>{}); });
     hls.on(Hls.Events.ERROR, (e,d)=>{
       if(miId!==cargaId || !d.fatal) return;
-      console.warn('[HLS error]', d);
       if(d.type===Hls.ErrorTypes.NETWORK_ERROR) hls.startLoad();
       else if(d.type===Hls.ErrorTypes.MEDIA_ERROR) hls.recoverMediaError();
       else {
@@ -781,8 +792,7 @@ function cargarMedio(urlOriginal){
 
   watchdog = setTimeout(()=>{
     if(miId===cargaId && video.readyState < 2){
-      console.warn('[Watchdog] Fuente no responde: ' + url);
-      mostrarDiag('⏱ La fuente no responde (¿URL rota?): ' + url.substring(0, 60) + '… Saltando…', 5000);
+      mostrarDiag('⏱ La fuente no responde: ' + url.substring(0, 60) + '… Saltando…', 5000);
       marcarFallo();
       saltar();
     }
@@ -800,11 +810,10 @@ video.addEventListener('playing', ()=>{
   if(cola[idx]) fallos.delete(idx);
   diagEl.classList.remove('on');
 });
-video.addEventListener('error', (e)=>{
+video.addEventListener('error', ()=>{
   if(!activo || hls) return;
   const err = video.error;
-  const msg = err ? `Código ${err.code}: ${err.message || 'error de reproducción'}` : 'error desconocido';
-  console.warn('[Video error]', msg);
+  const msg = err ? `Código ${err.code}: ${err.message || 'error de red/formato'}` : 'error desconocido';
   mostrarDiag('❌ No se pudo reproducir: ' + (cola[idx]?.titulo || '') + ' (' + msg + '). Saltando…', 5000);
   marcarFallo();
   saltar();
@@ -902,13 +911,12 @@ var v=document.getElementById('v'),gate=document.getElementById('gate'),
     elS=document.getElementById('s'),elMsg=document.getElementById('msg'),
     elErr=document.getElementById('err');
 
-/* Corrector de URL dentro del reproductor */
 function fixUrl(u){
   if(!u) return u;
-  u = u.replace(/^https?:\\/\\/archive\\.org\\/serve\\//i,'https://archive.org/download/');
-  u = u.replace(/^https?:\\/\\/www\\.archive\\.org\\/serve\\//i,'https://archive.org/download/');
-  u = u.replace(/^https?:\\/\\/archive\\.org\\/details\\//i,'https://archive.org/download/');
-  u = u.replace(/^https?:\\/\\/archive\\.org\\/embed\\//i,'https://archive.org/download/');
+  if(location.protocol==='https:' && /^http:\\/\\//i.test(u)) u=u.replace(/^http:\\/\\//i,'https://');
+  u = u.replace(/^https?:\\/\\/(www\\.)?archive\\.org\\/serve\\//i,'https://archive.org/download/');
+  u = u.replace(/^https?:\\/\\/(www\\.)?archive\\.org\\/details\\//i,'https://archive.org/download/');
+  u = u.replace(/^https?:\\/\\/(www\\.)?archive\\.org\\/embed\\//i,'https://archive.org/download/');
   u = u.replace(/#.*$/,'');
   return u;
 }
@@ -950,8 +958,7 @@ v.addEventListener('ended',next);
 v.addEventListener('playing',function(){clearTimeout(wd);elMsg.style.display='none';gate.classList.remove('on');elErr.classList.remove('on');});
 v.addEventListener('error',function(){
   if(hls)return;
-  var e=v.error;
-  showErr('❌ No se pudo reproducir'+(e?' (código '+e.code+')':'')+' · saltando…');
+  showErr('❌ Error de reproducción · saltando…');
   next();
 });
 v.addEventListener('waiting',function(){if(v.readyState<2)elMsg.style.display='block';});
@@ -1237,7 +1244,6 @@ $('chkLoop').addEventListener('change', ()=>{ cfg.loop = $('chkLoop').checked; }
   }
   if(!cargarLocal()) cargarDemo();
   leerConfig(); validarHttps(); renderCola();
-  console.log('%c🎬 CinefusiónTV · listo (con corrección Archive.org)','color:#e50914;font-weight:bold;font-size:14px');
 })();
 window.addEventListener('hashchange', ()=>{
   const h = leerHash();
