@@ -1,0 +1,7 @@
+{
+  "url": "https://raw.githubusercontent.com/Hansenn1090/GeneradorCFTV/main/cinefusiontv.m3u",
+  "nombre": "CinefusiónTV",
+  "tipo": "M3U",
+  "descripcion": "Playlist secuencial tipo canal de TV en vivo",
+  "formato": "application/x-mpegURL"
+}
