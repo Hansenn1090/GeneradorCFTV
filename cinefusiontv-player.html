@@ -42,13 +42,12 @@ var v=document.getElementById('v'),gate=document.getElementById('gate'),
     elS=document.getElementById('s'),elMsg=document.getElementById('msg'),
     elErr=document.getElementById('err');
 
-/* Corrector de URL dentro del reproductor */
 function fixUrl(u){
   if(!u) return u;
-  u = u.replace(/^https?:\/\/archive\.org\/serve\//i,'https://archive.org/download/');
-  u = u.replace(/^https?:\/\/www\.archive\.org\/serve\//i,'https://archive.org/download/');
-  u = u.replace(/^https?:\/\/archive\.org\/details\//i,'https://archive.org/download/');
-  u = u.replace(/^https?:\/\/archive\.org\/embed\//i,'https://archive.org/download/');
+  if(location.protocol==='https:' && /^http:\/\//i.test(u)) u=u.replace(/^http:\/\//i,'https://');
+  u = u.replace(/^https?:\/\/(www\.)?archive\.org\/serve\//i,'https://archive.org/download/');
+  u = u.replace(/^https?:\/\/(www\.)?archive\.org\/details\//i,'https://archive.org/download/');
+  u = u.replace(/^https?:\/\/(www\.)?archive\.org\/embed\//i,'https://archive.org/download/');
   u = u.replace(/#.*$/,'');
   return u;
 }
@@ -90,8 +89,7 @@ v.addEventListener('ended',next);
 v.addEventListener('playing',function(){clearTimeout(wd);elMsg.style.display='none';gate.classList.remove('on');elErr.classList.remove('on');});
 v.addEventListener('error',function(){
   if(hls)return;
-  var e=v.error;
-  showErr('❌ No se pudo reproducir'+(e?' (código '+e.code+')':'')+' · saltando…');
+  showErr('❌ Error de reproducción · saltando…');
   next();
 });
 v.addEventListener('waiting',function(){if(v.readyState<2)elMsg.style.display='block';});
